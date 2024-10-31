@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Dispatcher_Dashboard.aspx.cs" Inherits="Capstone.Dispatcher_Dashboard" %>
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Dispatcher_Dashboard.aspx.cs" Inherits="Capstone.Dispatcher_Dashboard" %>
 
 <!DOCTYPE html>
 
@@ -116,6 +116,12 @@
     font-size: 26px; /* Larger font size for numbers */
     font-weight: bold;
 }
+.scrollable-grid {
+        max-height: 600px; /* Set the max height */
+        overflow-y: auto;  /* Enable vertical scrolling */
+        overflow-x: hidden; /* Disable horizontal scrolling */
+    }
+
 
 </style>
 
@@ -391,11 +397,167 @@
                                 </div>
                             </div>
                             <!-- End Vehicles Pie Chart -->
+                       <!-- Start Image Buttons for Lists -->
+                        <div class="image-buttons-container" style="display: flex; gap: 25px; justify-content: center; margin-top: 30px;">
 
+                            <!-- Container for List of Haulers -->
+                            <div style="width: 420px; height: 130px; background-color: #053203; border-radius: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);" onclick="imgBtnHauler_Click();">
+                                <asp:ImageButton ID="imgBtnHauler" runat="server" ImageUrl="~/Pictures/driver.png"
+                                                 OnClick="imgBtnHauler_Click" 
+                                                 style="width: 70px; height: 70px; background: none; border: none;" />
+                                <div style="color: white;">View Hauler List</div>
                             </div>
+
+                            <!-- Container for List of Dispatchers -->
+                            <div style="width: 420px; height: 130px; background-color: #053203; border-radius: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);" onclick="imgBtnDispatcher_Click();">
+                                <asp:ImageButton ID="imgBtnDispatcher" runat="server" ImageUrl="~/Pictures/working_man.png"
+                                                 OnClick="imgBtnDispatcher_Click" 
+                                                 style="width: 70px; height: 70px; background: none; border: none;" />
+                                <div style="color: white;">View Dispatcher List</div>
+                            </div>
+
+                            <!-- Container for List of Customers -->
+                            <div style="width: 420px; height: 130px; background-color: #053203; border-radius: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);" onclick="imgBtnCustomer_Click();">
+                                <asp:ImageButton ID="imgBtnCustomer" runat="server" ImageUrl="~/Pictures/customer.png"
+                                                 OnClick="imgBtnCustomer_Click" 
+                                                 style="width: 70px; height: 70px; background: none; border: none;" />
+                                <div style="color: white;">View Customer List</div>
+                            </div>
+
                         </div>
-                    </div>
-                </section>
+                        <!-- End Image Buttons for Lists -->
+
+                <!-- Modal for List of Dispatchers -->
+                <asp:LinkButton ID="LinkButton1" runat="server"  OnClick="LinkButton1_Click"></asp:LinkButton>
+                 <asp:ScriptManager ID="ScriptManager1" runat="server"></asp:ScriptManager>
+                <asp:Panel ID="updatePanel" CssClass="card shadow-lg scrollable-panel" runat="server"
+                    Style="background-color: #052507; border: 1px solid aquamarine; border-radius: 8px; width: 100%; max-width: 1500px; margin: auto;">
+                    <ContentTemplate>
+                        <div class="gridview-container scrollable-grid" style="height: 600px; overflow-y: auto;">
+                            <asp:GridView Style="width: 100%; word-break: break-all; table-layout: fixed"
+                                ID="gridViewDispatcher" runat="server" AutoGenerateColumns="False" ShowHeaderWhenEmpty="True"
+                                DataKeyNames="emp_id" AllowPaging="False" CellPadding="20" GridLines="None">
+                                <HeaderStyle BackColor="#f8f9fa" ForeColor="#343a40" Font-Bold="True" />
+                                <Columns>
+                                    <asp:BoundField DataField="emp_id" HeaderText="Employee ID" ReadOnly="True">
+                                        <ItemStyle Width="100px" ForeColor="cyan" />
+                                    </asp:BoundField>
+                                    <asp:BoundField DataField="emp_name" HeaderText="Names">
+                                        <ItemStyle Width="100px" ForeColor="cyan" />
+                                    </asp:BoundField>
+                                    <asp:BoundField DataField="emp_contact" HeaderText="Contact">
+                                        <ItemStyle Width="100px" ForeColor="cyan" />
+                                    </asp:BoundField>
+                                    <asp:BoundField DataField="emp_address" HeaderText="Address">
+                                        <ItemStyle Width="200px" ForeColor="cyan" />
+                                    </asp:BoundField>
+                                    <asp:BoundField DataField="emp_profile" HeaderText="Profile">
+                                        <ItemStyle Width="100px" ForeColor="cyan" />
+                                    </asp:BoundField>
+                                    <asp:BoundField DataField="emp_status" HeaderText="Status">
+                                        <ItemStyle Width="100px" ForeColor="cyan" />
+                                    </asp:BoundField>
+                                </Columns>
+                            </asp:GridView>
+                        </div>
+                        <div class="card-footer" style="background-color: #052507; color: aquamarine; text-align: right;">
+                            <asp:Button ID="btnclose" CssClass="btn btn-secondary" runat="server" Text="Close" OnClick="btnClose_Click" />
+                        </div>
+                    </ContentTemplate>
+                </asp:Panel>
+
+                <ajaxToolkit:ModalPopupExtender ID="ModalPopupExtender1" runat="server"
+                    CancelControlID="btnclose" PopupControlID="updatePanel" TargetControlID="LinkButton1"
+                    BackgroundCssClass="Background" DropShadow="True">
+                </ajaxToolkit:ModalPopupExtender>
+
+                <!-- Modal for List of Haulers -->
+                <asp:LinkButton ID="LinkButton2" runat="server" Toolkit="View Hauler List" OnClick="LinkButton2_Click"></asp:LinkButton>
+
+                <asp:Panel ID="Panel1" CssClass="card shadow-lg scrollable-panel" runat="server"
+                    Style="background-color: #052507; border: 1px solid aquamarine; border-radius: 8px; width: 100%; max-width: 1500px; margin: auto;">
+                    <ContentTemplate>
+                        <div class="gridview-container scrollable-grid" style="height: 600px; overflow-y: auto;">
+                            <asp:GridView Style="width: 100%; word-break: break-all; table-layout: fixed"
+                                ID="gridViewHauler" runat="server" AutoGenerateColumns="False" ShowHeaderWhenEmpty="True"
+                                DataKeyNames="emp_id" AllowPaging="False" CellPadding="20" GridLines="None">
+                                <HeaderStyle BackColor="#f8f9fa" ForeColor="#343a40" Font-Bold="True" />
+                                <Columns>
+                                    <asp:BoundField DataField="emp_id" HeaderText="Employee ID" ReadOnly="True">
+                                        <ItemStyle Width="100px" ForeColor="cyan" />
+                                    </asp:BoundField>
+                                    <asp:BoundField DataField="emp_name" HeaderText="Names">
+                                        <ItemStyle Width="100px" ForeColor="cyan" />
+                                    </asp:BoundField>
+                                    <asp:BoundField DataField="emp_contact" HeaderText="Contact">
+                                        <ItemStyle Width="100px" ForeColor="cyan" />
+                                    </asp:BoundField>
+                                    <asp:BoundField DataField="emp_address" HeaderText="Address">
+                                        <ItemStyle Width="200px" ForeColor="cyan" />
+                                    </asp:BoundField>
+                                    <asp:BoundField DataField="emp_profile" HeaderText="Profile">
+                                        <ItemStyle Width="100px" ForeColor="cyan" />
+                                    </asp:BoundField>
+                                    <asp:BoundField DataField="emp_status" HeaderText="Status">
+                                        <ItemStyle Width="100px" ForeColor="cyan" />
+                                    </asp:BoundField>
+                                </Columns>
+                            </asp:GridView>
+                        </div>
+                        <div class="card-footer" style="background-color: #052507; color: aquamarine; text-align: right;">
+                            <asp:Button ID="btnclose1" CssClass="btn btn-secondary" runat="server" Text="Close" OnClick="btnClose1_Click" />
+                        </div>
+                    </ContentTemplate>
+                </asp:Panel>
+
+                <ajaxToolkit:ModalPopupExtender ID="ModalPopupExtender2" runat="server"
+                    CancelControlID="btnclose1" PopupControlID="Panel1" TargetControlID="LinkButton2"
+                    BackgroundCssClass="Background" DropShadow="True">
+                </ajaxToolkit:ModalPopupExtender>
+                        <!-- Modal for List of Customers -->
+<asp:LinkButton ID="LinkButton3" runat="server" Toolkit="View Hauler List" OnClick="LinkButton3_Click"></asp:LinkButton>
+
+<asp:Panel ID="Panel2" CssClass="card shadow-lg scrollable-panel" runat="server"
+    Style="background-color: #052507; border: 1px solid aquamarine; border-radius: 8px; width: 100%; max-width: 1500px; margin: auto;">
+    <ContentTemplate>
+        <div class="gridview-container scrollable-grid" style="height: 600px; overflow-y: auto;">
+            <asp:GridView Style="width: 100%; word-break: break-all; table-layout: fixed"
+                ID="gridViewCustomer" runat="server" AutoGenerateColumns="False" ShowHeaderWhenEmpty="True"
+                DataKeyNames="cus_id" AllowPaging="False" CellPadding="20" GridLines="None">
+                <HeaderStyle BackColor="#f8f9fa" ForeColor="#343a40" Font-Bold="True" />
+                <Columns>
+                    <asp:BoundField DataField="cus_id" HeaderText="Employee ID" ReadOnly="True">
+                        <ItemStyle Width="100px" ForeColor="cyan" />
+                    </asp:BoundField>
+                    <asp:BoundField DataField="cus_name" HeaderText="Names">
+                        <ItemStyle Width="100px" ForeColor="cyan" />
+                    </asp:BoundField>
+                    <asp:BoundField DataField="cus_contact" HeaderText="Contact">
+                        <ItemStyle Width="100px" ForeColor="cyan" />
+                    </asp:BoundField>
+                    <asp:BoundField DataField="cus_address" HeaderText="Address">
+                        <ItemStyle Width="200px" ForeColor="cyan" />
+                    </asp:BoundField>
+                    <asp:BoundField DataField="cus_profile" HeaderText="Profile">
+                        <ItemStyle Width="100px" ForeColor="cyan" />
+                    </asp:BoundField>
+                    <asp:BoundField DataField="cus_status" HeaderText="Status">
+                        <ItemStyle Width="100px" ForeColor="cyan" />
+                    </asp:BoundField>
+                </Columns>
+            </asp:GridView>
+        </div>
+        <div class="card-footer" style="background-color: #052507; color: aquamarine; text-align: right;">
+            <asp:Button ID="btnclose2" CssClass="btn btn-secondary" runat="server" Text="Close" OnClick="btnClose2_Click" />
+        </div>
+    </ContentTemplate>
+</asp:Panel>
+
+<ajaxToolkit:ModalPopupExtender ID="ModalPopupExtender3" runat="server"
+    CancelControlID="btnclose2" PopupControlID="Panel2" TargetControlID="LinkButton3"
+    BackgroundCssClass="Background" DropShadow="True">
+</ajaxToolkit:ModalPopupExtender>
+              
             </section>
             <!-- End General Form Elements -->
 
