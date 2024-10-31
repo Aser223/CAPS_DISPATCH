@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -16,6 +16,7 @@ using System.Net.Mail;
 using System.Net;
 using System.Xml.Linq;
 using System.Web.UI.HtmlControls;
+using AjaxControlToolkit;
 
 namespace Capstone
 {
@@ -28,7 +29,96 @@ namespace Capstone
             if (!IsPostBack)
             {
                 BindDashboardData();
-                RetrieveVehicleAvailability(); 
+                RetrieveVehicleAvailability();
+                LoadDispatcherData();
+                LoadHaulerData();
+                LoadCustomerData();
+            }
+            else
+            {
+                // Update pie chart data every time the modal opens
+                RetrieveVehicleAvailability();
+            }
+        }
+        private void LoadDispatcherData()
+        {
+            using (var db = new NpgsqlConnection(con))
+            {
+                db.Open();
+
+                // Query to retrieve dispatcher data
+                string dispatcherQuery = @"
+                SELECT e.emp_id,
+                       CONCAT(e.emp_fname, ' ', COALESCE(e.emp_mname, ''), ' ', e.emp_lname) AS emp_name,
+                       e.emp_contact,
+                       e.emp_address,
+                       e.emp_profile,
+                       e.emp_status
+                FROM employee e
+                WHERE e.role_id = 5;"; // Assuming role_id 5 corresponds to Dispatchers
+
+                using (var cmd = new NpgsqlCommand(dispatcherQuery, db))
+                using (var reader = cmd.ExecuteReader())
+                {
+                    var dispatcherTable = new DataTable();
+                    dispatcherTable.Load(reader);
+                    gridViewDispatcher.DataSource = dispatcherTable;
+                    gridViewDispatcher.DataBind();
+                }
+            }
+        }
+       
+        private void LoadHaulerData()
+        {
+            using (var db = new NpgsqlConnection(con))
+            {
+                db.Open();
+
+                // Query to retrieve dispatcher data
+                string dispatcherQuery = @"
+                SELECT e.emp_id,
+                       CONCAT(e.emp_fname, ' ', COALESCE(e.emp_mname, ''), ' ', e.emp_lname) AS emp_name,
+                       e.emp_contact,
+                       e.emp_address,
+                       e.emp_profile,
+                       e.emp_status
+                FROM employee e
+                WHERE e.role_id = 4;"; // Assuming role_id 5 corresponds to Dispatchers
+
+                using (var cmd = new NpgsqlCommand(dispatcherQuery, db))
+                using (var reader = cmd.ExecuteReader())
+                {
+                    var dispatcherTable = new DataTable();
+                    dispatcherTable.Load(reader);
+                    gridViewHauler.DataSource = dispatcherTable;
+                    gridViewHauler.DataBind();
+                }
+            }
+        }
+        private void LoadCustomerData()
+        {
+            using (var db = new NpgsqlConnection(con))
+            {
+                db.Open();
+
+                // Query to retrieve dispatcher data
+                string dispatcherQuery = @"
+                SELECT c.cus_id,
+                       CONCAT(c.cus_fname, ' ', COALESCE(c.cus_mname, ''), ' ', c.cus_lname) AS cus_name,
+                       c.cus_contact,
+                       c.cus_address,
+                       c.cus_profile,
+                       c.cus_status
+                FROM customer c;";
+
+                using (var cmd = new NpgsqlCommand(dispatcherQuery, db))
+                using (var reader = cmd.ExecuteReader())
+                {
+                    var dispatcherTable = new DataTable();
+                    dispatcherTable.Load(reader);
+                    gridViewCustomer.DataSource = dispatcherTable;
+                    gridViewCustomer.DataBind();
+                }
             }
         }
 
@@ -101,6 +191,70 @@ namespace Capstone
                 ClientScript.RegisterStartupScript(this.GetType(), "updateChart", script, true);
             }
         }
+        protected void imgBtnDispatcher_Click(object sender, ImageClickEventArgs e)
+        {
+            LoadDispatcherData();
+            ModalPopupExtender1.Show();
+        }
+        protected void imgBtnHauler_Click(object sender, ImageClickEventArgs e)
+        {
+            LoadHaulerData();
+            ModalPopupExtender2.Show();
+        }
+
+        protected void imgBtnCustomer_Click(object sender, ImageClickEventArgs e)
+        {
+            LoadCustomerData();
+            ModalPopupExtender3.Show();
+
+        }
+        protected void LinkButton1_Click(object sender, EventArgs e)
+        {
+            ModalPopupExtender3.Hide();
+            ModalPopupExtender2.Hide();
+            ModalPopupExtender1.Show();
+            //RetrieveVehicleAvailability();
+        }
+
+        protected void LinkButton2_Click(object sender, EventArgs e)
+        {
+            
+            ModalPopupExtender1.Hide();
+            ModalPopupExtender2.Show();
+            ModalPopupExtender3.Hide();
+            //RetrieveVehicleAvailability();
+
+        }
+        protected void LinkButton3_Click(object sender, EventArgs e)
+        {
+
+            ModalPopupExtender1.Hide();
+            ModalPopupExtender2.Hide();
+            ModalPopupExtender3.Show();
+            //RetrieveVehicleAvailability();
+
+        }
+
+
+
+        protected void btnClose_Click(object sender, EventArgs e)
+        {
+            
+            ModalPopupExtender1.Hide();
+        }
+
+        protected void btnClose1_Click(object sender, EventArgs e)
+        {
+           
+            ModalPopupExtender2.Hide();
+        }
+        protected void btnClose2_Click(object sender, EventArgs e)
+        {
+
+            ModalPopupExtender3.Hide();
+        }
+
+
     }
 }
 
