@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -234,7 +234,7 @@ namespace Capstone
                     cmd.CommandText = @"
                 UPDATE vehicle 
                 SET driver_id = NULL, 
-                    v_status = 'Awaiting Driver' 
+                    v_status = 'For Repair' 
                 WHERE driver_id = @newDriverId";
 
                     cmd.Parameters.AddWithValue("@newDriverId", newDriverId);
@@ -402,4 +402,3 @@ namespace Capstone
 
     }
 }
-
