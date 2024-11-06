@@ -53,19 +53,21 @@ namespace Capstone
                 db.Open();
                 using (var cmd = db.CreateCommand())
                 {
-                    // SQL query to filter based on vehicle ID or plate
+                    // SQL query to filter based on vehicle ID or plate and specific vehicle status
                     cmd.CommandText = @"
                 SELECT 
                     v.v_id, 
                     v.v_plate, 
                     vt.vtype_name, 
                     v.v_capacity, 
+                    v.v_status,
                     v.v_created_at, 
                     v.v_updated_at, 
                     v.driver_id
                 FROM vehicle v
                 INNER JOIN vehicle_type vt ON v.v_typeid = vt.vtype_id
                 WHERE v.driver_id IS NULL
+                AND (v.v_status = 'Awaiting Driver' OR v.v_status = 'For Repair')  
                 AND (v.v_id::text ILIKE '%' || @searchQuery || '%' 
                 OR v.v_plate ILIKE '%' || @searchQuery || '%')
                 ORDER BY v.v_created_at DESC";
@@ -87,7 +89,6 @@ namespace Capstone
             }
         }
 
-
         private void VehicleGridView()
         {
             using (var db = new NpgsqlConnection(con))
@@ -96,31 +97,35 @@ namespace Capstone
                 using (var cmd = db.CreateCommand())
                 {
                     cmd.CommandType = CommandType.Text;
-                    // Update the query to show vehicles that do not have a driver assigned (driver_id is NULL)
+                    // Filter vehicles where the v_status is 'Awaiting Driver' AND the driver_id is NULL
                     cmd.CommandText = @"
                 SELECT 
                     v.v_id, 
                     v.v_plate, 
                     vt.vtype_name, 
                     v.v_capacity, 
+                    v.v_status,
                     v.v_created_at, 
                     v.v_updated_at, 
                     v.driver_id
                 FROM vehicle v
                 INNER JOIN vehicle_type vt ON v.v_typeid = vt.vtype_id
-                WHERE v.v_status <> 'Unavailable' 
-                and v.driver_id IS NULL  -- Only select vehicles without a driver assigned
-                ORDER BY v.v_created_at DESC";  // Order by creation date, most recent first
+                WHERE (v.v_status = 'Awaiting Driver' OR v.v_status = 'For Repair')  
+                AND v.driver_id IS NULL  -- driver_id must be NULL
+                ORDER BY v.v_created_at DESC";  // Most recent vehicles first
 
                     DataTable admin_datatable = new DataTable();
                     NpgsqlDataAdapter admin_sda = new NpgsqlDataAdapter(cmd);
                     admin_sda.Fill(admin_datatable);
 
+                    // Bind the data to the GridView
                     gridViewDispatcher.DataSource = admin_datatable;
                     gridViewDispatcher.DataBind();
+
                 }
             }
         }
+
 
         private void Vehicle_TypeDDL()
         {
@@ -228,13 +233,14 @@ namespace Capstone
             // Clear existing items in the dropdown list
             ddlHauler.Items.Clear();
 
-            // Example query to get hauler data from your employee table
-            //string query = "SELECT emp_id, emp_fname, emp_mname, emp_lname FROM employee WHERE role_id = (SELECT role_id FROM roles WHERE role_name = 'Hauler')";
+            // Modified query to load both haulers with driver_id IS NULL and driver_id IS NOT NULL
             string query = @"
-            SELECT emp.emp_id, emp.emp_fname, emp.emp_mname, emp.emp_lname 
-            FROM employee emp
-            WHERE emp.role_id = 4  
-            AND emp.emp_id NOT IN (SELECT v.driver_id FROM vehicle v WHERE v.driver_id IS NOT NULL)";
+    SELECT emp.emp_id, emp.emp_fname, emp.emp_mname, emp.emp_lname
+    FROM employee emp
+    WHERE emp.role_id = 4 
+    AND (emp.emp_id NOT IN (SELECT v.driver_id FROM vehicle v WHERE v.driver_id IS NOT NULL)
+    OR emp.emp_id IN (SELECT v.driver_id FROM vehicle v WHERE v.driver_id IS NOT NULL))";
+
             using (NpgsqlConnection conn = new NpgsqlConnection(con))
             {
                 conn.Open();
@@ -255,12 +261,14 @@ namespace Capstone
                 }
             }
 
+            // Insert a default item at the top of the dropdown list
             ddlHauler.Items.Insert(0, new ListItem("-- Select Hauler --", ""));
         }
+
         protected void btnAssignHauler_Click(object sender, EventArgs e)
         {
-            int v_id = Convert.ToInt32(txtV_ID.Value);
-            string selected_hauler = ddlHauler.SelectedValue;
+            int v_id = Convert.ToInt32(txtV_ID.Value);  // Get the selected vehicle ID
+            string selected_hauler = ddlHauler.SelectedValue;  // Get the selected hauler ID
 
             if (string.IsNullOrEmpty(selected_hauler))
             {
@@ -271,46 +279,66 @@ namespace Capstone
                 return;
             }
 
+            // Convert selected hauler ID to integer
+            int driverId = Convert.ToInt32(selected_hauler);
+
             using (var db = new NpgsqlConnection(con))
             {
                 db.Open();
                 using (var cmd = db.CreateCommand())
                 {
-                    cmd.CommandType = CommandType.Text;
-                    cmd.CommandText = @"UPDATE VEHICLE SET 
-                        DRIVER_ID = @driver_id, 
-                        V_STATUS = 'Assigned',
-                        DRIVER_DATE_ASSIGNED_AT = @driver_date_assigned, 
-                        DRIVER_DATE_UPDATED_AT = @driver_date_updated 
-                        WHERE V_ID = @v_id";
-
-                    int driverId = Convert.ToInt32(selected_hauler);
-                    cmd.Parameters.AddWithValue("@driver_id", driverId);
-                    cmd.Parameters.AddWithValue("@v_id", v_id);
-                    cmd.Parameters.AddWithValue("@driver_date_assigned", DateTime.Now);
-                    cmd.Parameters.AddWithValue("@driver_date_updated", DateTime.Now);
-
-                    var ctr = cmd.ExecuteNonQuery();
-
-                    if (ctr >= 1)
+                    // Start a transaction to ensure both updates happen together
+                    using (var transaction = db.BeginTransaction())
                     {
-                        // SweetAlert success message for successful assignment
-                        ScriptManager.RegisterStartupScript(this, GetType(), "showAlert",
-                            "Swal.fire({ icon: 'success', title: 'Hauler Assigned!', text: 'The hauler was successfully assigned.', background: '#e9f7ef', confirmButtonColor: '#28a745' });",
-                            true);
-                    }
-                    else
-                    {
-                        // SweetAlert error message if assignment fails
-                        ScriptManager.RegisterStartupScript(this, GetType(), "showAlert",
-                            "Swal.fire({ icon: 'error', title: 'Assignment Failed', text: 'Unable to assign hauler. Please try again.', confirmButtonColor: '#d33' });",
-                            true);
+                        try
+                        {
+                            // 1. Update the previous vehicle that the driver was assigned to (set driver_id = NULL and v_status = 'Awaiting Driver')
+                            cmd.CommandText = @"
+                        UPDATE vehicle 
+                        SET driver_id = NULL, 
+                            v_status = 'Awaiting Driver', 
+                            driver_date_updated_at = NOW()  -- Current timestamp for updated_at
+                        WHERE driver_id = @driver_id";  // Find the vehicle assigned to this driver
+                            cmd.Parameters.AddWithValue("@driver_id", driverId);
+                            cmd.ExecuteNonQuery(); // Execute the command to update the previous vehicle
+
+                            // 2. Now, assign the new vehicle to the driver (set driver_id and v_status)
+                            cmd.CommandText = @"
+                        UPDATE vehicle 
+                        SET driver_id = @driver_id, 
+                            v_status = 'Assigned', 
+                            driver_date_assigned_at = @assignedAt, 
+                            driver_date_updated_at = @updatedAt
+                        WHERE v_id = @v_id";  // Update the new vehicle
+                            cmd.Parameters.AddWithValue("@driver_id", driverId);
+                            cmd.Parameters.AddWithValue("@v_id", v_id);
+                            cmd.Parameters.AddWithValue("@assignedAt", DateTime.Now);
+                            cmd.Parameters.AddWithValue("@updatedAt", DateTime.Now);
+                            cmd.ExecuteNonQuery(); // Execute the command to assign the new vehicle
+
+                            // Commit the transaction
+                            transaction.Commit();
+
+                            // Success: Show SweetAlert message for successful assignment
+                            ScriptManager.RegisterStartupScript(this, GetType(), "showAlert",
+                                "Swal.fire({ icon: 'success', title: 'Hauler Assigned!', text: 'The hauler was successfully assigned to the new vehicle.', background: '#e9f7ef', confirmButtonColor: '#28a745' });",
+                                true);
+
+                            VehicleGridView(); // Refresh GridView to reflect changes
+                        }
+                        catch (Exception ex)
+                        {
+                            // If any error occurs, roll back the transaction
+                            transaction.Rollback();
+                            ScriptManager.RegisterStartupScript(this, GetType(), "showAlert",
+                                "Swal.fire({ icon: 'error', title: 'Assignment Failed', text: 'An error occurred: " + ex.Message + "', confirmButtonColor: '#d33' });",
+                                true);
+                        }
                     }
                 }
             }
-
-            VehicleGridView(); // Refresh GridView to reflect changes
         }
+
 
 
         private void DisplayVehicleName(int v_id)
