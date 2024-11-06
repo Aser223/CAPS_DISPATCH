@@ -414,6 +414,9 @@
                                     <asp:BoundField DataField="v_capacity" HeaderText="Capacity" ItemStyle-Width="100px">
                                         <ItemStyle Width="100px" Wrap="true" />
                                     </asp:BoundField>
+                                    <asp:BoundField DataField="v_status" HeaderText="Status" ItemStyle-Width="100px">
+                                        <ItemStyle Width="100px" Wrap="true" />
+                                    </asp:BoundField>
                                     <asp:BoundField DataField="v_created_at" HeaderText="Created At" DataFormatString="{0:MM/dd/yyyy}" ItemStyle-Width="150px">
                                         <ItemStyle Width="150px" Wrap="true" />
                                     </asp:BoundField>
