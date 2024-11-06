@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="OD_manage.aspx.cs" Inherits="Capstone.OD_manage" %>
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="OD_manage.aspx.cs" Inherits="Capstone.OD_manage" %>
 
 <!DOCTYPE html>
 
@@ -70,13 +70,13 @@
     border: 1px solid #c2e1c2; /* Slightly darker border */
     border-radius: 5px;
     padding: 10px;
-    margin-left: 10px; /* 0.5 inch left margin */
-    margin-left: 15px;
+    width: 1350px;
+    box-sizing: border-box;
+    margin-left: 10px;
 }
-
-
+  
 .input-group input.form-control {
-    height: 50px; /* Set the desired height for the input */
+    height: 40px; /* Set the desired height for the input */
 }
 
 .input-group .input-group-append {
@@ -91,6 +91,29 @@
     background-color: transparent; /* Adjust background if needed */
     cursor: pointer; /* Change cursor to pointer */
 }
+
+
+
+/* Style for the Register button */
+.btn-register {
+    width: 250px; /* Adjust width of the button */
+    padding: 10px 20px; /* Extra padding for a wider button */
+    font-size: 16px; /* Font size */
+    display: flex; /* Align icon and text inside the button */
+    align-items: center; /* Vertically align the icon and text */
+    gap: 8px; /* Space between the icon and the text */
+}
+
+.btn-register i {
+    font-size: 20px; /* Icon size */
+}
+
+/* Hover effect */
+.btn-register:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}
+
+
 </style>
 
 </head>
@@ -291,9 +314,9 @@
 
                     </div>
                 </section>
-                
-            <section style="background-color: #052507; padding: 50px; border-radius: 8px; box-shadow: 0 0 5px rgba(0, 0, 0, .2)">
-                <div class="row">
+               
+            <section style="background-color: #052507;  padding: 50px; border-radius: 8px; box-shadow: 0 0 5px rgba(0, 0, 0, .2)">
+                <div class=" row">
                     <div class="col-lg-12"> <!-- Set to 8 columns for the form -->
 
                         <div class="card">
@@ -327,12 +350,26 @@
                                             </asp:DropDownList>
                                         </div>
                                     </div>
-
-                                    <div class="row mb-3">
+                                    <div></div>
+                                     <div class="row mb-3">
                                         <div class="col-sm-12 text-center">
                                             <asp:Button ID="Button1" CssClass="btn btn-primary" runat="server" Text="Register" OnClick="Button1_Click" />
                                         </div>
                                     </div>
+                                   
+                                    <!-- Add Category Button -->
+                                     <div style="position: relative;">
+                                    <asp:ImageButton 
+                                        ID="btnAddCategory" 
+                                        runat="server" 
+                                        ImageUrl="~/Pictures/category.png"
+                                        CommandArgument='<%# Eval("vtype_id") %>'
+                                        OnClick="btnAddCategory_Click" 
+                                        Width="50px" 
+                                        Height="50px" 
+                                        style="position: absolute; top: -290px; right: 10px; z-index: 10; cursor: pointer;" />
+                                </div>
+
 
                                 </form>
                                 <!-- End General Form Elements -->
@@ -342,18 +379,18 @@
 
                     </div>         
                        <%-- searchhh --%>
-                           <div class="search-section" style="margin-bottom: 15px; text-align: left; padding-left: 0.25in;">
-                               <div class="input-group" style="max-width: 400px; margin: 0;">
-                                   <input type="text" id="txtSearch" runat="server" class="form-control" placeholder="Search..." style="height: 50px;" />
-                                   <div class="input-group-append" style="margin-left: 20px;">
-                                       <asp:ImageButton ID="btnSearch" runat="server"
-                                           ImageUrl="~/Pictures/search.png"
-                                           CommandArgument='<%# Eval("v_id") %>'
-                                           OnClick="btnSearch_Click" 
-                                           CssClass="search-button" />
-                                   </div>
-                               </div>
-                           </div>
+                         <div class="search-section"  style="margin-bottom: 15px; text-align: left; padding-left: 0.25in;">
+                             <div class="input-group" style="max-width: 400px; margin: 0;">
+                                 <input type="text" id="txtSearch" runat="server" class="form-control" placeholder="Search..." style="height: 50px;" />
+                                 <div class="input-group-append" style="margin-left: 20px;">
+                                     <asp:ImageButton ID="ImageButton1" runat="server"
+                                         ImageUrl="~/Pictures/search.png"
+                                         CommandArgument='<%# Eval("v_id") %>'
+                                         OnClick="btnSearch_Click" 
+                                         CssClass="search-button" />
+                                 </div>
+                             </div>
+                         </div>
                    
                        <%-- GridView to add View Vehicle Status --%>
                         <div class="gridview-container" style="max-height: 400px; overflow-y: auto;">
@@ -478,6 +515,44 @@
                         CancelControlID="btncancel" PopupControlID="updatePanel" TargetControlID="LinkButton1"
                         BackgroundCssClass="Background" DropShadow="True">
                     </ajaxToolkit:ModalPopupExtender>
+
+                     <asp:LinkButton ID="LinkButton2" runat="server" Text="" style="display:none;"></asp:LinkButton>
+
+                <!-- Modal Panel for Add Category -->
+                <asp:Panel ID="Panel2" CssClass="card shadow-lg scrollable-panel" runat="server" 
+                    Style="background-color: #052507; border: 1px solid aquamarine; border-radius: 10px;">
+                    <contenttemplate>
+                        <div class="card bg-light" style="background-color: #052507;">
+                            <div class="card-header text-center" style="background-color: #052507; color: aquamarine;">
+                                <h4 class="mb-0">Add Vehicle Category</h4>
+                            </div>
+                            <div class="card-body" style="background-color: #052507; padding: 30px;">
+                                <div class="row">
+                                    <div class="col-12 mb-3">
+                                        <div class="input-group">
+                                            <!-- Label and input field should be aligned properly -->
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text">New Category:</span>
+                                            </div>
+                                            <asp:TextBox ID="txtaddCategory" runat="server" CssClass="form-control" 
+                                                         ClientIDMode="Static" placeholder="Enter category name"></asp:TextBox>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer text-center" style="background-color: #052507; color: aquamarine;">
+                                <asp:Button ID="btnCancel2" CssClass="btn btn-secondary btn-lg" runat="server" Text="Cancel" />
+                                <asp:Button ID="addbtncategory" CssClass="btn btn-primary btn-lg" runat="server" Text="Submit" OnClick="addbtncategory_Click" />
+                            </div>
+                        </div>
+                    </contenttemplate>
+                </asp:Panel>
+
+                <ajaxToolkit:ModalPopupExtender ID="ModalPopupExtender3" runat="server"
+                    CancelControlID="btnCancel2" PopupControlID="Panel2" TargetControlID="LinkButton2"
+                    BackgroundCssClass="Background" DropShadow="True">
+                </ajaxToolkit:ModalPopupExtender>
+
                 </section>
 
                 <!-- End General Form Elements -->
