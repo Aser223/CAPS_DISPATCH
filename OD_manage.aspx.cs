@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -35,8 +35,8 @@ namespace Capstone
                 VehicleGridView();
                 ValidationSettings.UnobtrusiveValidationMode = UnobtrusiveValidationMode.None;
 
-
             }
+            Page.MaintainScrollPositionOnPostBack = true;
         }
         protected void btnSearch_Click(object sender, ImageClickEventArgs e)
         {
@@ -78,6 +78,11 @@ namespace Capstone
 
                     gridViewDispatcher.DataSource = admin_datatable;
                     gridViewDispatcher.DataBind();
+
+                    if (admin_datatable.Rows.Count == 0)
+                    {
+                        ClientScript.RegisterStartupScript(this.GetType(), "swal", "Swal.fire('No Search Found', 'Try again.', 'info');", true);
+                    }
                 }
             }
         }
@@ -377,5 +382,62 @@ namespace Capstone
             // Show the modal popup
             ModalPopupExtender2.Show();
         }
+        protected void btnAddCategory_Click(object sender, ImageClickEventArgs e)
+        {
+            // Open the remove vehicle modal with selected vehicle ID
+            ImageButton btnAddCategory = (ImageButton)sender;
+            ModalPopupExtender3.Show();
+        }
+        protected void addbtncategory_Click(object sender, EventArgs e)
+        {
+            // Get the value entered in the textbox (txtaddCategory)
+            string categoryName = txtaddCategory.Text.Trim();  // Trim any leading or trailing whitespace
+
+            // Check if the input is not empty
+            if (!string.IsNullOrEmpty(categoryName))
+            {
+                using (var db = new NpgsqlConnection(con))
+                {
+                    db.Open();
+
+                    // Check if the category already exists
+                    using (var checkCmd = db.CreateCommand())
+                    {
+                        checkCmd.CommandText = "SELECT COUNT(*) FROM vehicle_type WHERE vtype_name = @vtype_name";
+                        checkCmd.Parameters.AddWithValue("@vtype_name", categoryName);
+
+                        int count = Convert.ToInt32(checkCmd.ExecuteScalar());
+                        if (count > 0)
+                        {
+                            // Category already exists, show a message
+                            ScriptManager.RegisterStartupScript(this, GetType(), "showAlert",
+                                "Swal.fire({ icon: 'error', title: 'Duplicate Category', text: 'The category already exists.', background: '#f8d7da', confirmButtonColor: '#dc3545' });", true);
+                            return; // Exit the method to prevent insertion
+                        }
+                    }
+
+                    // Proceed with the insert if the category doesn't exist
+                    using (var cmd = db.CreateCommand())
+                    {
+                        cmd.CommandText = "INSERT INTO vehicle_type (vtype_name) VALUES (@vtype_name)";
+                        cmd.Parameters.AddWithValue("@vtype_name", categoryName);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+
+                // Show a success message after saving the category
+                ScriptManager.RegisterStartupScript(this, GetType(), "showAlert",
+                    "Swal.fire({ icon: 'success', title: 'New Category Saved!', text: 'Vehicle category added successfully..', background: '#e9f7ef', confirmButtonColor: '#28a745' });", true);
+                Vehicle_TypeDDL();
+
+            }
+            else
+            {
+                // If the textbox is empty, show an error message
+                ScriptManager.RegisterStartupScript(this, GetType(), "showAlert",
+                    "Swal.fire({ icon: 'error', title: 'Error', text: 'Category name cannot be empty!', background: '#f8d7da', confirmButtonColor: '#dc3545' });", true);
+            }
+        }
+
     }
 }
