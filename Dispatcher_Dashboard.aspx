@@ -1,3 +1,4 @@
+
 <%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Dispatcher_Dashboard.aspx.cs" Inherits="Capstone.Dispatcher_Dashboard" %>
 
 <!DOCTYPE html>
@@ -364,39 +365,27 @@
                                             </div>
                                         </div>
                              <!-- End Vehicles Card -->
+                           <!-- Start Vehicles Pie Chart -->
+                        <div class="col-lg-12" style="padding: 20px; border-radius: 15px;">
+                            <div class="card-body" style="background-color: #053203; border-radius: 15px; padding: 20px;">
+                                <h5 class="card-title" style="color: chartreuse; text-align: left; font-size: 24px;">Vehicle Availability</h5>
 
-                         <!-- Start Vehicles Pie Chart -->
-                            <div class="col-lg-12" style="padding: 20px; border-radius: 15px;">
-                                <div class="card-body" style="background-color: #053203; border-radius: 15px; padding: 20px;">
-                                    <h5 class="card-title" style="color: chartreuse; text-align: left; font-size: 24px;">Vehicle Availability</h5>
-
-                                    <!-- Container for Chart and Legends -->
-                                    <div style="display: flex; justify-content: space-between; align-items: flex-start; position: relative;">
-                                        <!-- Centered Pie Chart -->
-                                        <div style="flex: 1; display: flex; justify-content: center;">
-                                            <canvas id="vehicleAvailabilityChart" style="max-width: 400px; max-height: 400px;"></canvas>
-                                        </div>
-                                        <!-- Legends in Upper Right Corner -->
-                                        <div style="position: absolute; top: 10px; right: 10px; color: chartreuse; font-size: 14px; text-align: right;">
-                                            <ul id="chartLegend" class="list-unstyled" style="list-style: none;">
-                                                <li><span style="color: #ff6384; font-size: 24px;">●</span> Siphoning</li>
-                                                <li><span style="color: #36a2eb; font-size: 24px;">●</span> Rear Loader</li>
-                                                <li><span style="color: #ffce56; font-size: 24px;">●</span> Mini Dump Truck</li>
-                                                <li><span style="color: #90EE90; font-size: 24px;">●</span> Compactor Truck</li>
-                                            </ul>
-                                        </div>
+                              
+                                    <!-- Centered Pie Chart -->
+                                    <div style="flex: 1; display: flex; justify-content: center; align-items: center; max-width: 100%; overflow: hidden;">
+                                        <canvas id="vehicleAvailabilityChart" width="500" height="500"></canvas>
                                     </div>
 
-                                    <!-- Vehicle Availability Summary positioned in the bottom left corner below the pie chart -->
-                                    <div id="vehicleSummary" style="margin-top: 20px; text-align: left; font-size: 18px; color: aquamarine;">
-                                    <p>Available Siphoning: <span id="availableSiphoning" class="count" style= "font-size: 20px;">0</span></p>
-                                    <p>Available Rear Loader Garbage Truck: <span id="availableRearLoader" class="count" style=" font-size: 20px;">0</span></p>
-                                    <p>Available Mini Dump Truck: <span id="availableMiniDump" class="count" style=" font-size: 20px;">0</span></p>
-                                    <p>Available Compactor Truck: <span id="availableCompactor" class="count" style=" font-size: 20px;">0</span></p>
-                                </div>
+                                    <!-- Legends aligned to the left bottom (positioned directly under the chart) -->
+                                    <div id="vehicleLegend" style="display: flex; flex-direction: column; gap: 10px; padding-top: 20px; padding-left: 20px; max-height: 200px; overflow-y: auto;">
+                                        <!-- Legend items will be populated here dynamically -->
+                                    </div>
                                 </div>
                             </div>
-                            <!-- End Vehicles Pie Chart -->
+                        </div>
+                        <!-- End Vehicles Pie Chart -->
+
+
                        <!-- Start Image Buttons for Lists -->
                         <div class="image-buttons-container" style="display: flex; gap: 25px; justify-content: center; margin-top: 30px;">
 
@@ -560,54 +549,100 @@
               
             </section>
             <!-- End General Form Elements -->
+          <asp:Literal ID="vehicleAvailabilityLiteral" runat="server"></asp:Literal>
+                <script type="text/javascript">
+                    // Inject the data from the Literal control into a global JavaScript variable
+                    var vehicleData = JSON.parse('<%= vehicleAvailabilityLiteral.Text %>');
+
+                    // Function to generate a dynamic array of distinct colors
+                    function generateDistinctColors(numColors) {
+                        let colors = [];
+                        const hueStep = 360 / numColors; // Step for hue to create distinct colors
+                        for (let i = 0; i < numColors; i++) {
+                            let hue = i * hueStep;  // Calculate a unique hue for each color
+                            let color = `hsl(${hue}, 70%, 60%)`; // Use HSL color model for good color diversity
+                            colors.push(color);
+                        }
+                        return colors;
+                    }
+
+                    // Prepare chart data
+                    var ctx = document.getElementById('vehicleAvailabilityChart').getContext('2d');
+
+                    // Generate a dynamic color palette based on the number of labels
+                    var colorPalette = generateDistinctColors(vehicleData.labels.length);
+
+                    var vehicleAvailabilityChart = new Chart(ctx, {
+                        type: 'pie',  // Pie chart type
+                        data: {
+                            labels: vehicleData.labels,  // Vehicle type names
+                            datasets: [{
+                                label: 'Vehicle Availability',
+                                data: vehicleData.data,  // Vehicle counts
+                                backgroundColor: colorPalette,  // Use dynamic colors
+                                hoverOffset: 4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,  // Allow the chart to stretch or resize freely
+                            aspectRatio: 1,  // Maintain a 1:1 aspect ratio (keep the pie chart circular)
+                            layout: {
+                                padding: {
+                                    bottom: 50,  // Adjust padding to ensure there's space for the legend
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    display: false  // Hide the default legend
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function (tooltipItem) {
+                                            return tooltipItem.label + ': ' + tooltipItem.raw + ' Vehicles';
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+
+                    // Dynamically create and populate the custom legend
+                    var legendContainer = document.getElementById('vehicleLegend');
+                    vehicleData.labels.forEach(function (label, index) {
+                        var legendItem = document.createElement('div');
+                        legendItem.style.display = 'flex';
+                        legendItem.style.alignItems = 'center';
+                        legendItem.style.gap = '10px';
+
+                        // Create the colored box for the legend with a white outline
+                        var colorBox = document.createElement('div');
+                        colorBox.style.width = '20px';
+                        colorBox.style.height = '20px';
+                        colorBox.style.backgroundColor = colorPalette[index];  // Use dynamic color
+                        colorBox.style.border = '2px solid white';  // White outline (2px thick)
+                        colorBox.style.borderRadius = '5px';  // Optional: make the box corners rounded
+
+                        // Create the label text for the legend
+                        var legendText = document.createElement('span');
+                        legendText.style.fontSize = '15px';
+                        legendText.style.fontWeight = 'bold';
+                        legendText.style.color = '#B39DDB';  // Light purple color for the legend text
+                        legendText.textContent = label + ': ' + vehicleData.data[index] + ' Vehicles';
+
+                        // Append color box and text to the legend item
+                        legendItem.appendChild(colorBox);
+                        legendItem.appendChild(legendText);
+
+                        // Add the legend item to the container
+                        legendContainer.appendChild(legendItem);
+                    });
+               </script>
+
 
             </main>
             <!-- End #main -->
-           <script>
-               let vehicleAvailabilityChart;
-
-               function updatePieChart(siphoning, rearLoader, miniDump, compactor) {
-                   const ctx = document.getElementById('vehicleAvailabilityChart').getContext('2d');
-
-                   // Validate input data to prevent issues with the chart
-                   const dataValues = [siphoning, rearLoader, miniDump, compactor];
-                   if (dataValues.some(value => value < 0)) {
-                       console.error("Invalid data: vehicle counts cannot be negative.");
-                       return;
-                   }
-
-                   // Create a new chart
-                   vehicleAvailabilityChart = new Chart(ctx, {
-                       type: 'pie',
-                       data: {
-                           labels: ['Siphoning', 'Rear Loader', 'Mini Dump Truck', 'Compactor'],
-                           datasets: [{
-                               data: dataValues,
-                               backgroundColor: [
-                                   '#ff6384',  // Siphoning
-                                   '#36a2eb',  // Rear Loader
-                                   '#ffce56',  // Mini Dump Truck
-                                   '#90EE90'   // Compactor
-                               ],
-                           }]
-                       },
-                       options: {
-                           responsive: true,
-                           maintainAspectRatio: false,
-                           plugins: {
-                               legend: {
-                                   display: false,
-                               }
-                           }
-                       }
-                   });
-                   // Update the availability text below the chart
-                   document.getElementById('availableSiphoning').textContent = siphoning;
-                   document.getElementById('availableRearLoader').textContent = rearLoader;
-                   document.getElementById('availableMiniDump').textContent = miniDump;
-                   document.getElementById('availableCompactor').textContent = compactor;
-               }
-           </script>
+           
 
             <!-- ======= Footer ======= -->
             <footer id="footer" class="footer" style="border-top-color: chartreuse">
