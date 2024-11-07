@@ -1,471 +1,591 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Web.UI;
-using System.Web.UI.WebControls;
-using System.Text.RegularExpressions;
-using Npgsql;
-using System.Security.Cryptography;
-using System.Text;
-using System.Data;
-using System.Text.Json;
-using System.IO;
-using System.Diagnostics;
-using System.Net.Mail;
-using System.Net;
-using System.Xml.Linq;
-using System.Web.UI.HtmlControls;
-namespace Capstone
-{
-    public partial class OD_manage : System.Web.UI.Page
-    {
-        private readonly string con = "Server=localhost;Port=5433;User Id=postgres;Password=123456;Database=trashtrack1";
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="OD_manage.aspx.cs" Inherits="Capstone.OD_manage" %>
 
-        protected void Page_Load(object sender, EventArgs e)
-        {
-            //if (!IsPostBack)
-            //{
-            //    Vehicle_TypeDDL(); // Call the method to populate the dropdown
-            //}
-            if (!IsPostBack)
-            {
-                LoadHaulers();
-                Vehicle_TypeDDL();
-                VehicleGridView();
-                ValidationSettings.UnobtrusiveValidationMode = UnobtrusiveValidationMode.None;
+<!DOCTYPE html>
 
-            }
-            Page.MaintainScrollPositionOnPostBack = true;
-        }
-        protected void btnSearch_Click(object sender, ImageClickEventArgs e)
-        {
-            string searchQuery = txtSearch.Value.Trim();
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-            // Call your method to filter the GridView based on the search query
-            FilterGridView(searchQuery);
-        }
+    <title>PBC - Dashboard</title>
+    <meta content="" name="description">
+    <meta content="" name="keywords">
 
-        private void FilterGridView(string searchQuery)
-        {
-            using (var db = new NpgsqlConnection(con))
-            {
-                db.Open();
-                using (var cmd = db.CreateCommand())
-                {
-                    // SQL query to filter based on vehicle ID or plate and specific vehicle status
-                    cmd.CommandText = @"
-                SELECT 
-                    v.v_id, 
-                    v.v_plate, 
-                    vt.vtype_name, 
-                    v.v_capacity, 
-                    v.v_status,
-                    v.v_created_at, 
-                    v.v_updated_at, 
-                    v.driver_id
-                FROM vehicle v
-                INNER JOIN vehicle_type vt ON v.v_typeid = vt.vtype_id
-                WHERE v.driver_id IS NULL
-                AND (v.v_status = 'Awaiting Driver' OR v.v_status = 'For Repair')  
-                AND (v.v_id::text ILIKE '%' || @searchQuery || '%' 
-                OR v.v_plate ILIKE '%' || @searchQuery || '%')
-                ORDER BY v.v_created_at DESC";
+    <!-- Favicons -->
+    <link href="assets/img/favicon.png" rel="icon">
+    <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
 
-                    cmd.Parameters.AddWithValue("@searchQuery", searchQuery);
+    <!-- Google Fonts -->
+    <link href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
 
-                    DataTable admin_datatable = new DataTable();
-                    NpgsqlDataAdapter admin_sda = new NpgsqlDataAdapter(cmd);
-                    admin_sda.Fill(admin_datatable);
+    <!-- Vendor CSS Files -->
+    <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+    <link href="assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet">
+    <link href="assets/vendor/quill/quill.snow.css" rel="stylesheet">
+    <link href="assets/vendor/quill/quill.bubble.css" rel="stylesheet">
+    <link href="assets/vendor/remixicon/remixicon.css" rel="stylesheet">
+    <link href="assets/vendor/simple-datatables/style.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-                    gridViewDispatcher.DataSource = admin_datatable;
-                    gridViewDispatcher.DataBind();
+    <!-- Template Main CSS File -->
+    <link href="assets/css/style.css" rel="stylesheet">
+   
 
-                    if (admin_datatable.Rows.Count == 0)
-                    {
-                        ClientScript.RegisterStartupScript(this.GetType(), "swal", "Swal.fire('No Search Found', 'Try again.', 'info');", true);
-                    }
-                }
-            }
-        }
-
-        private void VehicleGridView()
-        {
-            using (var db = new NpgsqlConnection(con))
-            {
-                db.Open();
-                using (var cmd = db.CreateCommand())
-                {
-                    cmd.CommandType = CommandType.Text;
-                    // Filter vehicles where the v_status is 'Awaiting Driver' AND the driver_id is NULL
-                    cmd.CommandText = @"
-                SELECT 
-                    v.v_id, 
-                    v.v_plate, 
-                    vt.vtype_name, 
-                    v.v_capacity, 
-                    v.v_status,
-                    v.v_created_at, 
-                    v.v_updated_at, 
-                    v.driver_id
-                FROM vehicle v
-                INNER JOIN vehicle_type vt ON v.v_typeid = vt.vtype_id
-                WHERE (v.v_status = 'Awaiting Driver' OR v.v_status = 'For Repair')  
-                AND v.driver_id IS NULL  -- driver_id must be NULL
-                ORDER BY v.v_created_at DESC";  // Most recent vehicles first
-
-                    DataTable admin_datatable = new DataTable();
-                    NpgsqlDataAdapter admin_sda = new NpgsqlDataAdapter(cmd);
-                    admin_sda.Fill(admin_datatable);
-
-                    // Bind the data to the GridView
-                    gridViewDispatcher.DataSource = admin_datatable;
-                    gridViewDispatcher.DataBind();
-
-                }
-            }
-        }
-
-
-        private void Vehicle_TypeDDL()
-        {
-            using (var db = new NpgsqlConnection(con))
-            {
-                db.Open();
-                using (var cmd = db.CreateCommand())
-                {
-                    cmd.CommandText = "SELECT VTYPE_ID, VTYPE_NAME FROM VEHICLE_TYPE";
-                    NpgsqlDataAdapter VehicleNameAdapter = new NpgsqlDataAdapter(cmd);
-                    DataTable VehicleName = new DataTable();
-                    VehicleNameAdapter.Fill(VehicleName);
-
-                    vehicle_type_ddl.DataSource = VehicleName;
-                    vehicle_type_ddl.DataTextField = "VTYPE_NAME";
-                    vehicle_type_ddl.DataValueField = "VTYPE_ID";
-                    vehicle_type_ddl.DataBind();
-
-                    // Add a default item
-                    vehicle_type_ddl.Items.Insert(0, new ListItem("Select Truck Category", "0"));
-                }
-            }
-        }
-        protected void Button1_Click(object sender, EventArgs e)
-        {
-            int emp_id = 1007;  // Replace with dynamic employee ID if necessary
-            string v_plate = vehicle_PLATES.Text.Trim(); // Trim whitespace
-            string v_cap = vehicle_cap.Text.Trim(); // Trim whitespace
-            string vehicleCapacityUnit = "TONS";    // Fixed value for vehicle capacity unit
-            string v_type = vehicle_type_ddl.SelectedValue;
-
-            // Validate inputs
-            if (string.IsNullOrWhiteSpace(v_plate) || string.IsNullOrWhiteSpace(v_cap))
-            {
-                ClientScript.RegisterStartupScript(this.GetType(), "swal", "Swal.fire('Error', 'Vehicle plate or vehicle capacity cannot be empty!', 'error');", true);
-                return;
-            }
-
-            if (v_type == "0")
-            {
-                ClientScript.RegisterStartupScript(this.GetType(), "swal", "Swal.fire('Error', 'Please select a valid vehicle type!', 'error');", true);
-                return;
-            }
-
-            // Check if the plate number already exists
-            using (var db = new NpgsqlConnection(con))
-            {
-                db.Open();
-                using (var checkCmd = db.CreateCommand())
-                {
-                    checkCmd.CommandType = CommandType.Text;
-                    checkCmd.CommandText = "SELECT COUNT(*) FROM VEHICLE WHERE V_PLATE = @v_plate";
-                    checkCmd.Parameters.AddWithValue("@v_plate", v_plate);
-
-                    int count = Convert.ToInt32(checkCmd.ExecuteScalar());
-                    if (count > 0)
-                    {
-                        // Plate number already exists
-                        ClientScript.RegisterStartupScript(this.GetType(), "swal", "Swal.fire('Warning', 'Vehicle plate number already exists!', 'warning');", true);
-                        return;
-                    }
-                }
-
-                // Proceed to insert the vehicle
-                using (var cmd = db.CreateCommand())
-                {
-                    cmd.CommandType = CommandType.Text;
-                    cmd.CommandText = @"
-            INSERT INTO VEHICLE(V_PLATE, V_CAPACITY, V_CAPACITY_UNIT, V_TYPEID, EMP_ID)
-            VALUES(@v_plate, @v_cap, @v_cap_unit, @v_typeid, @emp_id)";
-
-                    cmd.Parameters.AddWithValue("@v_plate", v_plate);
-                    cmd.Parameters.AddWithValue("@v_cap", Convert.ToInt32(v_cap));
-                    cmd.Parameters.AddWithValue("@v_cap_unit", vehicleCapacityUnit);  // Always use 'TONS'
-                    cmd.Parameters.AddWithValue("@v_typeid", Convert.ToInt32(v_type));
-                    cmd.Parameters.AddWithValue("@emp_id", emp_id);
-
-                    var ctr = cmd.ExecuteNonQuery();
-
-                    if (ctr >= 1)
-                    {
-                        // Clear form fields
-                        vehicle_PLATES.Text = "";
-                        vehicle_cap.Text = "";
-                        vehicle_type_ddl.SelectedIndex = 0;
-
-                        // Show SweetAlert for successful registration
-                        ClientScript.RegisterStartupScript(this.GetType(), "swal", "Swal.fire({title: 'Success', text: 'Vehicle Registered Successfully!', icon: 'success', confirmButtonColor: '#3085d6', cancelButtonColor: '#d33'});", true);
-
-                        // Refresh the GridView to reflect changes
-                        VehicleGridView();
-                    }
-                    else
-                    {
-                        // Handle failure case
-                        ClientScript.RegisterStartupScript(this.GetType(), "swal", "Swal.fire('Error', 'Vehicle Registration Failed!', 'error');", true);
-                    }
-                }
-            }
-        }
-
-
-        private void LoadHaulers()
-        {
-            // Clear existing items in the dropdown list
-            ddlHauler.Items.Clear();
-
-            // Modified query to load both haulers with driver_id IS NULL and driver_id IS NOT NULL
-            string query = @"
-    SELECT emp.emp_id, emp.emp_fname, emp.emp_mname, emp.emp_lname
-    FROM employee emp
-    WHERE emp.role_id = 4 
-    AND (emp.emp_id NOT IN (SELECT v.driver_id FROM vehicle v WHERE v.driver_id IS NOT NULL)
-    OR emp.emp_id IN (SELECT v.driver_id FROM vehicle v WHERE v.driver_id IS NOT NULL))";
-
-            using (NpgsqlConnection conn = new NpgsqlConnection(con))
-            {
-                conn.Open();
-                using (NpgsqlCommand cmd = new NpgsqlCommand(query, conn))
-                {
-                    using (NpgsqlDataReader reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            // Concatenate first, middle, and last names to create the full name
-                            string fullName = $"{reader["emp_fname"]} {reader["emp_mname"]} {reader["emp_lname"]}".Trim();
-
-                            // Create a new list item for each hauler and add it to the dropdown list
-                            ListItem item = new ListItem(fullName, reader["emp_id"].ToString());
-                            ddlHauler.Items.Add(item);
-                        }
-                    }
-                }
-            }
-
-            // Insert a default item at the top of the dropdown list
-            ddlHauler.Items.Insert(0, new ListItem("-- Select Hauler --", ""));
-        }
-
-        protected void btnAssignHauler_Click(object sender, EventArgs e)
-        {
-            int v_id = Convert.ToInt32(txtV_ID.Value);  // Get the selected vehicle ID
-            string selected_hauler = ddlHauler.SelectedValue;  // Get the selected hauler ID
-
-            if (string.IsNullOrEmpty(selected_hauler))
-            {
-                // Show SweetAlert warning if no hauler is selected
-                ScriptManager.RegisterStartupScript(this, GetType(), "showAlert",
-                    "Swal.fire({ icon: 'warning', title: 'No hauler selected', text: 'Please select a hauler before assigning.', confirmButtonColor: '#3085d6' });",
-                    true);
-                return;
-            }
-
-            // Convert selected hauler ID to integer
-            int driverId = Convert.ToInt32(selected_hauler);
-
-            using (var db = new NpgsqlConnection(con))
-            {
-                db.Open();
-                using (var cmd = db.CreateCommand())
-                {
-                    // Start a transaction to ensure both updates happen together
-                    using (var transaction = db.BeginTransaction())
-                    {
-                        try
-                        {
-                            // 1. Update the previous vehicle that the driver was assigned to (set driver_id = NULL and v_status = 'Awaiting Driver')
-                            cmd.CommandText = @"
-                        UPDATE vehicle 
-                        SET driver_id = NULL, 
-                            v_status = 'Awaiting Driver', 
-                            driver_date_updated_at = NOW()  -- Current timestamp for updated_at
-                        WHERE driver_id = @driver_id";  // Find the vehicle assigned to this driver
-                            cmd.Parameters.AddWithValue("@driver_id", driverId);
-                            cmd.ExecuteNonQuery(); // Execute the command to update the previous vehicle
-
-                            // 2. Now, assign the new vehicle to the driver (set driver_id and v_status)
-                            cmd.CommandText = @"
-                        UPDATE vehicle 
-                        SET driver_id = @driver_id, 
-                            v_status = 'Assigned', 
-                            driver_date_assigned_at = @assignedAt, 
-                            driver_date_updated_at = @updatedAt
-                        WHERE v_id = @v_id";  // Update the new vehicle
-                            cmd.Parameters.AddWithValue("@driver_id", driverId);
-                            cmd.Parameters.AddWithValue("@v_id", v_id);
-                            cmd.Parameters.AddWithValue("@assignedAt", DateTime.Now);
-                            cmd.Parameters.AddWithValue("@updatedAt", DateTime.Now);
-                            cmd.ExecuteNonQuery(); // Execute the command to assign the new vehicle
-
-                            // Commit the transaction
-                            transaction.Commit();
-
-                            // Success: Show SweetAlert message for successful assignment
-                            ScriptManager.RegisterStartupScript(this, GetType(), "showAlert",
-                                "Swal.fire({ icon: 'success', title: 'Hauler Assigned!', text: 'The hauler was successfully assigned to the new vehicle.', background: '#e9f7ef', confirmButtonColor: '#28a745' });",
-                                true);
-
-                            VehicleGridView(); // Refresh GridView to reflect changes
-                        }
-                        catch (Exception ex)
-                        {
-                            // If any error occurs, roll back the transaction
-                            transaction.Rollback();
-                            ScriptManager.RegisterStartupScript(this, GetType(), "showAlert",
-                                "Swal.fire({ icon: 'error', title: 'Assignment Failed', text: 'An error occurred: " + ex.Message + "', confirmButtonColor: '#d33' });",
-                                true);
-                        }
-                    }
-                }
-            }
-        }
-
-
-
-        private void DisplayVehicleName(int v_id)
-        {
-            try
-            {
-                using (var db = new NpgsqlConnection(con))
-                {
-                    db.Open();
-                    using (var cmd = db.CreateCommand())
-                    {
-                        cmd.CommandType = CommandType.Text;
-                        cmd.CommandText = "SELECT v_plate FROM VEHICLE WHERE v_id = @v_id";
-                        cmd.Parameters.AddWithValue("@v_id", v_id); // Ensure this matches the parameter name in the SQL command
-
-                        var reader = cmd.ExecuteReader();
-                        if (reader.Read())
-                        {
-                            txtbxVehiclePlate.Text = reader["v_plate"].ToString();
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                ClientScript.RegisterClientScriptBlock(this.GetType(), "alert",
-                    "swal('Error!', '" + ex.Message + "', 'error')", true);
-            }
-        }
-
-        protected void viewassignhauler_Click(object sender, EventArgs e)
-        {
-            // Cast the sender to LinkButton to get the button that was clicked
-            LinkButton btn = sender as LinkButton;
-
-            if (btn == null)
-            {
-                // Log or handle the case where the sender is not a LinkButton
-                return;
-            }
-
-            // Check if CommandArgument is null
-            if (btn.CommandArgument == null)
-            {
-                // Handle the case where CommandArgument is null
-                return;
-            }
-
-            // Get the CommandArgument (which contains both vehicle ID and plate)
-            string[] commandArgs = btn.CommandArgument.Split(';');
-
-            // Ensure commandArgs has the expected number of elements
-            if (commandArgs.Length < 2)
-            {
-                // Handle error: CommandArgument does not contain enough elements
-                return;
-            }
-
-            // Parse vehicle ID and vehicle plate from commandArgs
-            int vehicleId = Convert.ToInt32(commandArgs[0]); // Vehicle ID
-            string vehiclePlate = commandArgs[1]; // Vehicle Plate
-            txtV_ID.Value = vehicleId.ToString();
-            // Set the Vehicle Plate in the textbox (disabled)
-            txtbxVehiclePlate.Text = vehiclePlate; // Set the plate number in the textbox
-
-            // Load haulers into the dropdown list
-            LoadHaulers();
-
-            // Show the modal popup
-            ModalPopupExtender2.Show();
-        }
-        protected void btnAddCategory_Click(object sender, ImageClickEventArgs e)
-        {
-            // Open the remove vehicle modal with selected vehicle ID
-            ImageButton btnAddCategory = (ImageButton)sender;
-            ModalPopupExtender3.Show();
-        }
-        protected void addbtncategory_Click(object sender, EventArgs e)
-        {
-            // Get the value entered in the textbox (txtaddCategory)
-            string categoryName = txtaddCategory.Text.Trim();  // Trim any leading or trailing whitespace
-
-            // Check if the input is not empty
-            if (!string.IsNullOrEmpty(categoryName))
-            {
-                using (var db = new NpgsqlConnection(con))
-                {
-                    db.Open();
-
-                    // Check if the category already exists
-                    using (var checkCmd = db.CreateCommand())
-                    {
-                        checkCmd.CommandText = "SELECT COUNT(*) FROM vehicle_type WHERE vtype_name = @vtype_name";
-                        checkCmd.Parameters.AddWithValue("@vtype_name", categoryName);
-
-                        int count = Convert.ToInt32(checkCmd.ExecuteScalar());
-                        if (count > 0)
-                        {
-                            // Category already exists, show a message
-                            ScriptManager.RegisterStartupScript(this, GetType(), "showAlert",
-                                "Swal.fire({ icon: 'error', title: 'Duplicate Category', text: 'The category already exists.', background: '#f8d7da', confirmButtonColor: '#dc3545' });", true);
-                            return; // Exit the method to prevent insertion
-                        }
-                    }
-
-                    // Proceed with the insert if the category doesn't exist
-                    using (var cmd = db.CreateCommand())
-                    {
-                        cmd.CommandText = "INSERT INTO vehicle_type (vtype_name) VALUES (@vtype_name)";
-                        cmd.Parameters.AddWithValue("@vtype_name", categoryName);
-                        cmd.ExecuteNonQuery();
-                    }
-                }
-
-                // Show a success message after saving the category
-                ScriptManager.RegisterStartupScript(this, GetType(), "showAlert",
-                    "Swal.fire({ icon: 'success', title: 'New Category Saved!', text: 'Vehicle category added successfully..', background: '#e9f7ef', confirmButtonColor: '#28a745' });", true);
-                Vehicle_TypeDDL();
-
-            }
-            else
-            {
-                // If the textbox is empty, show an error message
-                ScriptManager.RegisterStartupScript(this, GetType(), "showAlert",
-                    "Swal.fire({ icon: 'error', title: 'Error', text: 'Category name cannot be empty!', background: '#f8d7da', confirmButtonColor: '#dc3545' });", true);
-            }
-        }
-
-    }
+    <style>
+/* Style for the Assign Hauler button when available */
+.assign-hauler-button {
+    color: black; /* Dark black text color */
+    font-weight: bold; /* Bold text */
 }
+.form-control {
+    border-radius: 4px !important;  /* Ensure rounded corners */
+    padding: 10px;                 /* Same padding for all */
+    height: 38px;                  /* Uniform height */
+    width: 100%;                   /* Full-width for uniformity */
+}
+
+
+/* Hover effect for the available button */
+.assign-hauler-button:hover {
+    background-color: lightblue; /* Light blue background on hover */
+}
+
+/* Style for the button when it's disabled (hauler already assigned) */
+.button-disabled {
+    color: dimgray; /* Dim gray text color for disabled */
+    font-weight: normal; /* Normal weight */
+    cursor: not-allowed; /* Change cursor to indicate unclickable */
+}
+
+/* Prevent hover effect for disabled button */
+.button-disabled:hover {
+    background-color: transparent; /* No background on hover */
+    color: dimgray; /* Keep text color dim gray */
+}
+   .search-section {
+    background-color: #d9f9d9; /* Light green background */
+    border: 1px solid #c2e1c2; /* Slightly darker border */
+    border-radius: 5px;
+    padding: 10px;
+    width: 100%; /* 90% of the viewport width */
+    box-sizing: border-box;
+    margin-left: 10px;
+}
+
+  
+.input-group input.form-control {
+    height: 40px; /* Set the desired height for the input */
+}
+
+.input-group .input-group-append {
+    margin-left: 10px; /* Add some space between the input and the button */
+}
+
+.input-group .input-group-append .search-button {
+    width: 60px; /* Set a smaller width for the button */
+    height: 50px; /* Match the input height */
+    padding: 0; /* Remove default padding */
+    border: none; /* Remove border if you want a flat look */
+    background-color: transparent; /* Adjust background if needed */
+    cursor: pointer; /* Change cursor to pointer */
+}
+
+
+
+/* Style for the Register button */
+.btn-register {
+    width: 250px; /* Adjust width of the button */
+    padding: 10px 20px; /* Extra padding for a wider button */
+    font-size: 16px; /* Font size */
+    display: flex; /* Align icon and text inside the button */
+    align-items: center; /* Vertically align the icon and text */
+    gap: 8px; /* Space between the icon and the text */
+}
+
+.btn-register i {
+    font-size: 20px; /* Icon size */
+}
+
+/* Hover effect */
+.btn-register:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}
+
+
+</style>
+
+</head>
+<form id="form2" runat="server">
+    <div>
+        <body style="background-color: #041d06">
+
+            <!-- ======= Header ======= -->
+            <%--#9ee2a0, #9ee2a0, #9ee2a0--%>
+            <%--  <header style="background-image: linear-gradient(to right, #000000, #061f0d, #000000); height: 80px" id="header" class="header fixed-top d-flex align-items-center">--%>
+            <header style="background-color: black; height: 80px" id="header" class="header fixed-top d-flex align-items-center">
+
+                <div class="d-flex align-items-center justify-content-between">
+                    <a href="WAREHOUSE_ADD_ITEM.aspx" class="logo d-flex align-items-center">
+                        <img style="border-radius: 1px" src="Pictures/logo2.png" alt="" />
+                        <span style="color: aqua; font-weight: 900; font-family: 'Agency FB'" class="d-none d-lg-block">PBC</span>
+                    </a>
+                    <i style="color: aqua" class="bi bi-list toggle-sidebar-btn"></i>
+                </div>
+                <!-- End Logo -->
+
+              
+
+                <nav class="header-nav ms-auto">
+                    <ul class="d-flex align-items-center">
+
+                       
+
+                        <li class="nav-item dropdown">
+
+                        
+
+                            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow notifications">
+                               
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+
+                               
+
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+
+                                
+
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+
+                               
+
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+
+                              
+                            </ul>
+                            <!-- End Notification Dropdown Items -->
+
+                        </li>
+                        <!-- End Notification Nav -->
+
+                        <li class="nav-item dropdown pe-3">
+
+                            <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown" style="color: aqua">
+                                <asp:ImageMap ID="profile_image" runat="server" alt="Profile" class="rounded-circle" Style="background-color: #053203"></asp:ImageMap>
+                                <span style="color: aqua" class="d-none d-md-block dropdown-toggle ps-2">
+                                    <asp:Label ID="Label2" runat="server" Text=""></asp:Label></span>
+                            </a>
+                            <!-- End Profile Image Icon -->
+
+                            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
+                                <li class="dropdown-header">
+                                    <h6>
+                                        <asp:Label ID="Label1" runat="server" Text=""></asp:Label></h6>
+                                    <span>
+                                        <asp:Label ID="Label3" runat="server" Text="Administrator"></asp:Label></span>
+                                </li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+
+                              
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+
+                                <li>
+                                    <a class="dropdown-item d-flex align-items-center" href="Admin_Change_Pass.aspx">
+                                        <i class="bi bi-gear"></i>
+                                        <span>Account Settings</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li>
+                                    <a class="dropdown-item d-flex align-items-center" href="#" onclick="confirmLogout()">
+                                        <i class="bi bi-box-arrow-right"></i>
+                                        <span>Sign Out</span>
+                                    </a>
+                                </li>
+                                <script>
+                                    function confirmLogout() {
+                                        var isConfirmed = confirm("Are you sure you want to log out?");
+                                        if (isConfirmed) {
+                                            // If confirmed, redirect to the logout page
+                                            window.location.href = "LOGIN.aspx";
+                                        } else {
+                                            // If not confirmed, do nothing or handle as needed
+                                        }
+                                    }
+                                </script>
+                            </ul>
+                            <!-- End Profile Dropdown Items -->
+                        </li>
+                        <!-- End Profile Nav -->
+
+                    </ul>
+                </nav>
+                <!-- End Icons Navigation -->
+
+            </header>
+            <!-- End Header -->
+
+            <!-- ======= Sidebar ======= -->
+            <aside style="padding-top: 50px" id="sidebar" class="sidebar">
+            <ul class="sidebar-nav" id="sidebar-nav">
+
+                <li class="nav-item">
+                    <a class="nav-link <% if (Request.Url.AbsolutePath.EndsWith("Dispatcher_Dashboard.aspx")) { %> active <% } %>" href="Dispatcher_Dashboard.aspx">
+                        <i class="bi bi-grid" style="color: aquamarine"></i>
+                        <span style="color: aquamarine">Dashboard</span>
+                    </a>
+                </li>
+                <!-- End Employee Nav -->
+                    <li class="nav-item">
+                        <a class="nav-link <% if (Request.Url.AbsolutePath.EndsWith("OD_manage.aspx") || Request.Url.AbsolutePath.EndsWith("Re_AssignVehicle.aspx")) { %> active <% } %>" data-bs-target="#forms-nav" data-bs-toggle="collapse" href="#">
+                            <i class="bi bi-people"></i><span>Manage Actions</span><i class="bi bi-chevron-down ms-auto"></i>
+                        </a>
+                        <ul id="forms-nav" class="nav-content collapse <% if (Request.Url.AbsolutePath.EndsWith("OD_manage.aspx") || Request.Url.AbsolutePath.EndsWith("Re_AssignVehicle.aspx")) { %> show <% } %>" data-bs-parent="#sidebar-nav">
+                            <li>
+                                <a class="<% if (Request.Url.AbsolutePath.EndsWith("OD_manage.aspx")) { %> active <% } %>" href="OD_manage.aspx">
+                                    <i class="bi bi-circle"></i><span>Manage Vehicle and Haulers</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="<% if (Request.Url.AbsolutePath.EndsWith("Re_AssignVehicle.aspx")) { %> active <% } %>" href="Re_AssignVehicle.aspx">
+                                    <i class="bi bi-circle"></i><span>Assigns and Controls</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="<% if (Request.Url.AbsolutePath.EndsWith("Dispatcher_AddSlip.aspx")) { %> active <% } %>" href="Dispatcher_AddSlip.aspx">
+                                    <i class="bi bi-circle"></i><span>Manage Truck Scale Slip</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+
+            </ul>
+        </aside>
+
+            <!-- End Sidebar-->
+
+            <main id="main" class="main">
+
+                <div class="pagetitle">
+                    <h1 style="padding-top: 20px; color: chartreuse; font-size: 24px;" >Operational Dispatcher</h1>
+                    <nav>
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="WAREHOUSE_DASHBOARD.aspx" style="font-size: 18px;">Management</a></li>
+                            <%--<li class="breadcrumb-item">Add Item</li>--%>
+                        </ol>
+                    </nav>
+                </div>
+                <!-- End Page Title -->
+
+                <section class="section dashboard">
+                    <div class="row">
+
+                        <!-- Left side columns -->
+                        <div class="col-lg-8">
+                            <div class="row">
+                            </div>
+                        </div>
+                        <!-- End Left side columns -->
+
+                        <!-- Right side columns -->
+                        <div class="col-lg-4">
+                        </div>
+                        <!-- End Right side columns -->
+
+                    </div>
+                </section>
+               
+            <section style="background-color: #052507;  padding: 50px; border-radius: 8px; box-shadow: 0 0 5px rgba(0, 0, 0, .2)">
+                <div class=" row">
+                    <div class="col-lg-12"> <!-- Set to 8 columns for the form -->
+
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title" style="font-size:20px; font-weight:bold;">Register Vehicle</h5>
+
+                                <!-- General Form Elements -->
+                                <form>
+
+                                    <div class="row mb-3">
+                                        <div class="col-sm-6">
+                                            <label for="vehicle_PLATES" class="col-form-label" style="font-weight:bold;">Vehicle Plate:</label>
+                                            <asp:TextBox CssClass="form-control" ID="vehicle_PLATES" runat="server"></asp:TextBox>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <label for="vehicle_cap" class="col-form-label" style="font-weight:bold;">Vehicle Capacity:</label>
+                                            <asp:TextBox CssClass="form-control" ID="vehicle_cap" runat="server"></asp:TextBox>
+                                        </div>
+                                    </div>
+
+                                    <div class="row mb-3">
+                                        <div class="col-sm-6">
+                                            <label for="vehicle_cap_unit" class="col-form-label" style="font-weight:bold;">Vehicle Capacity Unit:</label>
+                                            <asp:TextBox CssClass="form-control" ID="vehicle_cap_unit" runat="server" Text="TONS" ReadOnly="true" Enabled="false"></asp:TextBox>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <label for="vehicle_type_ddl" class="col-form-label" style="font-weight:bold;">Select Vehicle Type:</label>
+                                            <asp:DropDownList ID="vehicle_type_ddl" CssClass="form-select" runat="server" AutoPostBack="true"
+                                                DataTextField="VTYPE_NAME" DataValueField="VTYPE_ID">
+                                                <asp:ListItem Text="Select Vehicle Type" Value=""></asp:ListItem>
+                                            </asp:DropDownList>
+                                        </div>
+                                    </div>
+                                    <div></div>
+                                     <div class="row mb-3">
+                                        <div class="col-sm-12 text-center">
+                                            <asp:Button ID="Button1" CssClass="btn btn-primary" runat="server" Text="Register" OnClick="Button1_Click" />
+                                        </div>
+                                    </div>
+                                   
+                                    <!-- Add Category Button -->
+                                     <div style="position: relative;">
+                                    <asp:ImageButton 
+                                        ID="btnAddCategory" 
+                                        runat="server" 
+                                        ImageUrl="~/Pictures/category.png"
+                                        CommandArgument='<%# Eval("vtype_id") %>'
+                                        OnClick="btnAddCategory_Click" 
+                                        Width="50px" 
+                                        Height="50px" 
+                                        style="position: absolute; top: -290px; right: 10px; z-index: 10; cursor: pointer;" />
+                                </div>
+
+
+                                </form>
+                                <!-- End General Form Elements -->
+
+                            </div>
+                        </div>
+
+                    </div>         
+                       <%-- searchhh --%>
+                         <div class="search-section"  style="margin-bottom: 15px; text-align: left; padding-left: 0.25in;">
+                             <div class="input-group" style="max-width: 400px; margin: 0;">
+                                 <input type="text" id="txtSearch" runat="server" class="form-control" placeholder="Search..." style="height: 50px;" />
+                                 <div class="input-group-append" style="margin-left: 20px;">
+                                     <asp:ImageButton ID="ImageButton1" runat="server"
+                                         ImageUrl="~/Pictures/search.png"
+                                         CommandArgument='<%# Eval("v_id") %>'
+                                         OnClick="btnSearch_Click" 
+                                         CssClass="search-button" />
+                                 </div>
+                             </div>
+                         </div>
+                   
+                       <%-- GridView to add View Vehicle Status --%>
+                        <div class="gridview-container" style="max-height: 400px; overflow-y: auto;">
+                            <asp:GridView Style="width: 100%; word-break: break-all; table-layout: fixed" 
+                                ID="gridViewDispatcher" runat="server" 
+                                AutoGenerateColumns="False" ShowHeaderWhenEmpty="True"
+                                DataKeyNames="v_id" AllowPaging="False" CellPadding="20" GridLines="None">
+        
+                                <AlternatingRowStyle BackColor="white" ForeColor="Black" />
+
+                                <Columns>
+                                    <asp:BoundField DataField="v_id" HeaderText="ID" ReadOnly="True" ItemStyle-Width="100px">
+                                        <ItemStyle Width="100px" Wrap="true" />
+                                    </asp:BoundField>
+                                    <asp:BoundField DataField="v_plate" HeaderText="Plate Number" ItemStyle-Width="150px">
+                                        <ItemStyle Width="150px" Wrap="true" />
+                                    </asp:BoundField>
+                                    <asp:BoundField DataField="vtype_name" HeaderText="Vehicle Type" ItemStyle-Width="150px">
+                                        <ItemStyle Width="150px" Wrap="true" />
+                                    </asp:BoundField>
+                                    <asp:BoundField DataField="v_capacity" HeaderText="Capacity" ItemStyle-Width="100px">
+                                        <ItemStyle Width="100px" Wrap="true" />
+                                    </asp:BoundField>
+                                    <asp:BoundField DataField="v_status" HeaderText="Status" ItemStyle-Width="100px">
+                                        <ItemStyle Width="100px" Wrap="true" />
+                                    </asp:BoundField>
+                                    <asp:BoundField DataField="v_created_at" HeaderText="Created At" DataFormatString="{0:MM/dd/yyyy}" ItemStyle-Width="150px">
+                                        <ItemStyle Width="150px" Wrap="true" />
+                                    </asp:BoundField>
+                                    <asp:BoundField DataField="v_updated_at" HeaderText="Updated At" DataFormatString="{0:MM/dd/yyyy}" ItemStyle-Width="150px">
+                                        <ItemStyle Width="150px" Wrap="true" />
+                                    </asp:BoundField>
+                                    <asp:BoundField DataField="driver_id" HeaderText="Hauler ID" ItemStyle-Width="100px">
+                                        <ItemStyle Width="100px" Wrap="true" />
+                                    </asp:BoundField>
+                                    <asp:TemplateField HeaderText="Actions">
+                                    <ItemTemplate>
+                                    <asp:LinkButton ID="viewassignhauler" runat="server" Text="Assign Hauler"
+                                        CommandArgument='<%# Eval("v_id") + ";" + Eval("v_plate") %>'
+                                        OnClick="viewassignhauler_Click" ValidationGroup="AssignHaulerGroup"
+                                        Enabled='<%# Eval("driver_id") == DBNull.Value %>'
+                                        style="font-weight: bold;"></asp:LinkButton>
+                                </ItemTemplate>
+
+                                </asp:TemplateField>
+
+                                </Columns>
+                                <RowStyle BackColor="White" ForeColor="Black" />
+                                <EditRowStyle BackColor="#90EE90" />
+                                <FooterStyle BackColor="Black" Font-Bold="True" ForeColor="#f9cfb4" />
+                                <HeaderStyle BackColor="#66CDAA" Font-Bold="True" ForeColor="black" BorderStyle="None" />
+                                <PagerStyle BorderColor="#CC9900" Font-Size="20px" BackColor="White" ForeColor="#f9cfb4" HorizontalAlign="Center" />
+                                <SelectedRowStyle BackColor="#C5BBAF" Font-Bold="True" ForeColor="White" />
+                                <SortedAscendingCellStyle BackColor="Black" />
+                                <SortedAscendingHeaderStyle BackColor="#246B61" />
+                                <SortedDescendingCellStyle BackColor="Black" />
+                                <SortedDescendingHeaderStyle BackColor="#15524A" />
+                            </asp:GridView>
+                        </div>
+
+
+                        <div class="col-lg-6">
+                        </div>
+                    </div>
+
+
+                </section>
+                <section>
+                    <!-- Link Button to Trigger Modal -->
+                    <asp:LinkButton ID="LinkButton1" runat="server" Text="Assign Hauler"></asp:LinkButton>
+
+                    <!-- Script Manager -->
+                    <asp:ScriptManager ID="ScriptManager1" runat="server"></asp:ScriptManager>
+
+                    <!-- Modal Panel for Hauler Assignment -->
+                    <asp:Panel ID="updatePanel" CssClass="card shadow-lg scrollable-panel" runat="server"
+                        Style="max-width: 600px; background-color: #052507; border: 1px solid aquamarine; border-radius: 8px;">
+                        <contenttemplate>
+                            <div class="card bg-light" style="background-color: #052507;">
+                                <!-- Header Section -->
+                                <div class="card-header text-center" style="background-color: #052507; color: aquamarine;">
+                                    <h4 class="mb-0">Assign Hauler</h4>
+                                </div>
+
+                                <!-- Body Section -->
+                                <div class="card-body" style="background-color: #052507;">
+                                    <div class="row">
+
+                                        <!-- Hauler Dropdown (Retrieve from Employee Table where Role = Hauler) -->
+                                        <div class="col-12 mb-3">
+                                            <div class="input-group input-group-sm">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text">Select Hauler</span>
+                                                </div>
+                                                <asp:DropDownList ID="ddlHauler" runat="server" CssClass="form-control">
+                                                </asp:DropDownList>
+                                            </div>
+                                        </div>
+                                        <!-- Vehicle ID (Disabled) -->
+                                        <div class="col-12 mb-3">
+                                            <div class="input-group input-group-sm">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text">Vehicle Plate</span>
+                                                </div>
+                                                <asp:TextBox ID="txtbxVehiclePlate" runat="server" CssClass="form-control" ClientIDMode="Static" Enabled="false"></asp:TextBox>
+                                                <asp:HiddenField ID="txtV_ID" runat="server"/>
+                                            </div>
+                                        </div>
+
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Footer Section -->
+                            <div class="card-footer text-center" style="background-color: #052507; color: aquamarine;">
+                                <asp:Button ID="btncancel" CssClass="btn btn-secondary" runat="server" Text="Cancel" />
+                                <asp:Button ID="btnAssignHauler" CssClass="btn btn-primary" runat="server" Text="Assign" OnClick="btnAssignHauler_Click" Enabled="true" />
+                            </div>
+                        </contenttemplate>
+                    </asp:Panel>
+
+                    <!-- Modal Popup Extender -->
+                    <ajaxToolkit:ModalPopupExtender ID="ModalPopupExtender2" runat="server"
+                        CancelControlID="btncancel" PopupControlID="updatePanel" TargetControlID="LinkButton1"
+                        BackgroundCssClass="Background" DropShadow="True">
+                    </ajaxToolkit:ModalPopupExtender>
+
+                     <asp:LinkButton ID="LinkButton2" runat="server" Text="" style="display:none;"></asp:LinkButton>
+
+                <!-- Modal Panel for Add Category -->
+                <asp:Panel ID="Panel2" CssClass="card shadow-lg scrollable-panel" runat="server" 
+                    Style="background-color: #052507; border: 1px solid aquamarine; border-radius: 10px;">
+                    <contenttemplate>
+                        <div class="card bg-light" style="background-color: #052507;">
+                            <div class="card-header text-center" style="background-color: #052507; color: aquamarine;">
+                                <h4 class="mb-0">Add Vehicle Category</h4>
+                            </div>
+                            <div class="card-body" style="background-color: #052507; padding: 30px;">
+                                <div class="row">
+                                    <div class="col-12 mb-3">
+                                        <div class="input-group">
+                                            <!-- Label and input field should be aligned properly -->
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text">New Category:</span>
+                                            </div>
+                                            <asp:TextBox ID="txtaddCategory" runat="server" CssClass="form-control" 
+                                                         ClientIDMode="Static" placeholder="Enter category name"></asp:TextBox>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer text-center" style="background-color: #052507; color: aquamarine;">
+                                <asp:Button ID="btnCancel2" CssClass="btn btn-secondary btn-lg" runat="server" Text="Cancel" />
+                                <asp:Button ID="addbtncategory" CssClass="btn btn-primary btn-lg" runat="server" Text="Submit" OnClick="addbtncategory_Click" />
+                            </div>
+                        </div>
+                    </contenttemplate>
+                </asp:Panel>
+
+                <ajaxToolkit:ModalPopupExtender ID="ModalPopupExtender3" runat="server"
+                    CancelControlID="btnCancel2" PopupControlID="Panel2" TargetControlID="LinkButton2"
+                    BackgroundCssClass="Background" DropShadow="True">
+                </ajaxToolkit:ModalPopupExtender>
+
+                </section>
+
+                <!-- End General Form Elements -->
+            </main>
+            <!-- End #main -->
+
+            <!-- ======= Footer ======= -->
+            <footer id="footer" class="footer" style="border-top-color: chartreuse">
+                <div class="copyright" style="color: #d4f3cf">
+                    &copy; Copyright <strong><span style="color: #d4f3cf">Pinoy Basurero Corporation</span></strong>. All Rights Reserved
+                </div>
+            </footer>
+            <!-- End Footer -->
+
+            <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+            <!-- Vendor JS Files -->
+            <script src="assets/vendor/apexcharts/apexcharts.min.js"></script>
+            <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+            <script src="assets/vendor/chart.js/chart.umd.js"></script>
+            <script src="assets/vendor/echarts/echarts.min.js"></script>
+            <script src="assets/vendor/quill/quill.min.js"></script>
+            <script src="assets/vendor/simple-datatables/simple-datatables.js"></script>
+            <script src="assets/vendor/tinymce/tinymce.min.js"></script>
+            <script src="assets/vendor/php-email-form/validate.js"></script>
+
+            <!-- Template Main JS File -->
+            <script src="assets/js/main.js"></script>
+    </div>
+
+</form>
+</html>
