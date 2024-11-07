@@ -17,6 +17,8 @@ using System.Net;
 using System.Xml.Linq;
 using System.Web.UI.HtmlControls;
 using AjaxControlToolkit;
+using Newtonsoft.Json;
+using System.Drawing;
 
 namespace Capstone
 {
@@ -33,11 +35,14 @@ namespace Capstone
                 LoadDispatcherData();
                 LoadHaulerData();
                 LoadCustomerData();
+                VehicleAvailability();
             }
+
             else
             {
                 // Update pie chart data every time the modal opens
                 RetrieveVehicleAvailability();
+                Page.MaintainScrollPositionOnPostBack = true;
             }
         }
         private void LoadDispatcherData()
@@ -67,7 +72,7 @@ namespace Capstone
                 }
             }
         }
-       
+
         private void LoadHaulerData()
         {
             using (var db = new NpgsqlConnection(con))
@@ -152,45 +157,49 @@ namespace Capstone
             }
         }
 
-        private void RetrieveVehicleAvailability()
+
+        private void VehicleAvailability()
+        {
+            var vehicleAvailabilityData = RetrieveVehicleAvailability();
+
+            // Use a Literal control to inject the JSON data into the page
+            vehicleAvailabilityLiteral.Text = vehicleAvailabilityData;
+        }
+
+        private string RetrieveVehicleAvailability()
         {
             using (var db = new NpgsqlConnection(con))
             {
                 db.Open();
 
-                // Prepare variables to hold counts
-                int compactorCount = 0;
-                int miniDumpCount = 0;
-                int siphoningCount = 0;
-                int rearLoaderCount = 0;
-
-                // SQL query to count vehicles based on their v_typeid
                 string query = @"
-            SELECT 
-                COUNT(CASE WHEN vehicle.v_typeid = 100 THEN 1 END) AS compactor,
-                COUNT(CASE WHEN vehicle.v_typeid = 101 THEN 1 END) AS mini_dump,
-                COUNT(CASE WHEN vehicle.v_typeid = 102 THEN 1 END) AS siphoning,
-                COUNT(CASE WHEN vehicle.v_typeid = 103 THEN 1 END) AS rear_loader
-            FROM vehicle;";
+       SELECT vt.vtype_name, COUNT(v.v_typeid) AS vehicle_count
+            FROM vehicle v
+            JOIN vehicle_type vt ON v.v_typeid = vt.vtype_id
+            WHERE v.driver_id IS NULL
+            GROUP BY vt.vtype_name
+            ORDER BY vt.vtype_name;";
 
                 using (var cmd = new NpgsqlCommand(query, db))
                 using (var reader = cmd.ExecuteReader())
                 {
-                    if (reader.Read())
-                    {
-                        // Read counts from the query result
-                        compactorCount = reader.GetInt32(0);
-                        miniDumpCount = reader.GetInt32(1);
-                        siphoningCount = reader.GetInt32(2);
-                        rearLoaderCount = reader.GetInt32(3);
-                    }
-                }
+                    List<string> labels = new List<string>();
+                    List<int> data = new List<int>();
 
-                // Call the JavaScript function to update the pie chart
-                string script = $"updatePieChart({siphoningCount}, {rearLoaderCount}, {miniDumpCount}, {compactorCount});";
-                ClientScript.RegisterStartupScript(this.GetType(), "updateChart", script, true);
+                    while (reader.Read())
+                    {
+                        labels.Add(reader.GetString(0));  // Vehicle type name (vtype_name)
+                        data.Add(reader.GetInt32(1));     // Vehicle count
+                    }
+
+                    // Serialize the data into a JSON string
+                    var vehicleData = new { labels, data };
+                    return JsonConvert.SerializeObject(vehicleData);  // Serialize to JSON string
+                }
             }
         }
+
+
         protected void imgBtnDispatcher_Click(object sender, ImageClickEventArgs e)
         {
             LoadDispatcherData();
@@ -218,7 +227,7 @@ namespace Capstone
 
         protected void LinkButton2_Click(object sender, EventArgs e)
         {
-            
+
             ModalPopupExtender1.Hide();
             ModalPopupExtender2.Show();
             ModalPopupExtender3.Hide();
@@ -239,13 +248,13 @@ namespace Capstone
 
         protected void btnClose_Click(object sender, EventArgs e)
         {
-            
+
             ModalPopupExtender1.Hide();
         }
 
         protected void btnClose1_Click(object sender, EventArgs e)
         {
-           
+
             ModalPopupExtender2.Hide();
         }
         protected void btnClose2_Click(object sender, EventArgs e)
@@ -257,4 +266,3 @@ namespace Capstone
 
     }
 }
-
