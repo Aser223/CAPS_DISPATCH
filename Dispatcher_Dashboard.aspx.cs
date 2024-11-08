@@ -19,6 +19,8 @@ using System.Web.UI.HtmlControls;
 using AjaxControlToolkit;
 using Newtonsoft.Json;
 using System.Drawing;
+using System.Data.SqlClient;
+
 
 namespace Capstone
 {
@@ -45,87 +47,215 @@ namespace Capstone
                 Page.MaintainScrollPositionOnPostBack = true;
             }
         }
+
+        //Orignal Code for LoadDispatcherData()
+        //private void LoadDispatcherData()
+        //{
+        //    using (var db = new NpgsqlConnection(con))
+        //    {
+        //        db.Open();
+
+        //        // Query to retrieve dispatcher data
+        //        string dispatcherQuery = @"
+        //        SELECT e.emp_id,
+        //               CONCAT(e.emp_fname, ' ', COALESCE(e.emp_mname, ''), ' ', e.emp_lname) AS emp_name,
+        //               e.emp_contact,
+        //               e.emp_address,
+        //               e.emp_profile,
+        //               e.emp_status
+        //        FROM employee e
+        //        WHERE e.role_id = 5;"; // Assuming role_id 5 corresponds to Dispatchers
+
+        //        using (var cmd = new NpgsqlCommand(dispatcherQuery, db))
+        //        using (var reader = cmd.ExecuteReader())
+        //        {
+        //            var dispatcherTable = new DataTable();
+        //            dispatcherTable.Load(reader);
+        //            gridViewDispatcher.DataSource = dispatcherTable;
+        //            gridViewDispatcher.DataBind();
+        //        }
+        //    }
+        //}
+
         private void LoadDispatcherData()
         {
             using (var db = new NpgsqlConnection(con))
             {
                 db.Open();
 
-                // Query to retrieve dispatcher data
+                // Query to retrieve dispatcher data (role_id = 5 corresponds to Dispatchers)
                 string dispatcherQuery = @"
-                SELECT e.emp_id,
-                       CONCAT(e.emp_fname, ' ', COALESCE(e.emp_mname, ''), ' ', e.emp_lname) AS emp_name,
-                       e.emp_contact,
-                       e.emp_address,
-                       e.emp_profile,
-                       e.emp_status
-                FROM employee e
-                WHERE e.role_id = 5;"; // Assuming role_id 5 corresponds to Dispatchers
+        SELECT e.emp_id,
+               CONCAT(e.emp_fname, ' ', COALESCE(e.emp_mname, ''), ' ', e.emp_lname) AS emp_name,
+               e.emp_contact,
+               e.emp_address,
+               e.emp_profile,
+               e.emp_status
+        FROM employee e
+        WHERE e.role_id = 5;"; // Dispatcher role_id = 5
 
                 using (var cmd = new NpgsqlCommand(dispatcherQuery, db))
                 using (var reader = cmd.ExecuteReader())
                 {
                     var dispatcherTable = new DataTable();
                     dispatcherTable.Load(reader);
+
+                    // Add a new column for the processed profile image URL
+                    dispatcherTable.Columns.Add("profile_image", typeof(string));
+
+                    // Process each row to set the 'profile_image' column using GetProfileImage
+                    foreach (DataRow row in dispatcherTable.Rows)
+                    {
+                        row["profile_image"] = GetProfileImage(row["emp_profile"]);
+                    }
+
+                    // Bind the processed data to the GridView
                     gridViewDispatcher.DataSource = dispatcherTable;
                     gridViewDispatcher.DataBind();
                 }
             }
         }
 
-        private void LoadHaulerData()
+
+
+
+
+        //Original LoadHaulerData
+        //private void LoadHaulerData()
+        //{
+        //    using (var db = new NpgsqlConnection(con))
+        //    {
+        //        db.Open();
+
+        //        // Query to retrieve dispatcher data
+        //        string dispatcherQuery = @"
+        //        SELECT e.emp_id,
+        //               CONCAT(e.emp_fname, ' ', COALESCE(e.emp_mname, ''), ' ', e.emp_lname) AS emp_name,
+        //               e.emp_contact,
+        //               e.emp_address,
+        //               e.emp_profile,
+        //               e.emp_status
+        //        FROM employee e
+        //        WHERE e.role_id = 4;"; // Assuming role_id 5 corresponds to Dispatchers
+
+        //        using (var cmd = new NpgsqlCommand(dispatcherQuery, db))
+        //        using (var reader = cmd.ExecuteReader())
+        //        {
+        //            var dispatcherTable = new DataTable();
+        //            dispatcherTable.Load(reader);
+        //            gridViewHauler.DataSource = dispatcherTable;
+        //            gridViewHauler.DataBind();
+        //        }
+        //    }
+        //}
+        protected string GetProfileImage(object profileImage)
         {
+            // Check if profileImage is null or empty
+            if (profileImage == DBNull.Value || profileImage == null)
+            {
+                return "Pictures/no-image.png"; // Return default image path if profile is empty
+            }
+
+            // Otherwise, return the actual profile image URL (this can be a path or base64 string if stored as bytea)
+            return "data:image/png;base64," + Convert.ToBase64String((byte[])profileImage);
+        }
+        protected void LoadHaulerData()
+        {
+            // Ensure your PostgreSQL connection string is set correctly
+            //string con = "your_connection_string_here"; // Set your DB connection string here
+
             using (var db = new NpgsqlConnection(con))
             {
                 db.Open();
 
-                // Query to retrieve dispatcher data
-                string dispatcherQuery = @"
-                SELECT e.emp_id,
-                       CONCAT(e.emp_fname, ' ', COALESCE(e.emp_mname, ''), ' ', e.emp_lname) AS emp_name,
-                       e.emp_contact,
-                       e.emp_address,
-                       e.emp_profile,
-                       e.emp_status
-                FROM employee e
-                WHERE e.role_id = 4;"; // Assuming role_id 5 corresponds to Dispatchers
-
-                using (var cmd = new NpgsqlCommand(dispatcherQuery, db))
-                using (var reader = cmd.ExecuteReader())
+                using (var cmd = db.CreateCommand())
                 {
-                    var dispatcherTable = new DataTable();
-                    dispatcherTable.Load(reader);
-                    gridViewHauler.DataSource = dispatcherTable;
+                    cmd.CommandType = CommandType.Text;
+
+                    // Using PostgreSQL string concatenation operator (||) for emp_fname and emp_lname
+                    cmd.CommandText = "SELECT emp_id, emp_fname || ' ' || emp_lname AS emp_name, emp_contact, emp_address, emp_profile, emp_status " +
+                                      "FROM employee WHERE role_id = 4";
+
+                    // Use NpgsqlDataAdapter to fill the DataTable
+                    NpgsqlDataAdapter da = new NpgsqlDataAdapter(cmd);
+                    DataTable dt = new DataTable();
+                    da.Fill(dt);
+
+                    // Bind the DataTable to the GridView
+                    gridViewHauler.DataSource = dt;
                     gridViewHauler.DataBind();
                 }
             }
         }
+
+
+        //Original LoadCustomerData
+        //private void LoadCustomerData()
+        //{
+        //    using (var db = new NpgsqlConnection(con))
+        //    {
+        //        db.Open();
+
+        //        // Query to retrieve dispatcher data
+        //        string dispatcherQuery = @"
+        //        SELECT c.cus_id,
+        //               CONCAT(c.cus_fname, ' ', COALESCE(c.cus_mname, ''), ' ', c.cus_lname) AS cus_name,
+        //               c.cus_contact,
+        //               c.cus_address,
+        //               c.cus_profile,
+        //               c.cus_status
+        //        FROM customer c;";
+
+        //        using (var cmd = new NpgsqlCommand(dispatcherQuery, db))
+        //        using (var reader = cmd.ExecuteReader())
+        //        {
+        //            var dispatcherTable = new DataTable();
+        //            dispatcherTable.Load(reader);
+        //            gridViewCustomer.DataSource = dispatcherTable;
+        //            gridViewCustomer.DataBind();
+        //        }
+        //    }
+        //}
+
+
         private void LoadCustomerData()
         {
             using (var db = new NpgsqlConnection(con))
             {
                 db.Open();
 
-                // Query to retrieve dispatcher data
-                string dispatcherQuery = @"
-                SELECT c.cus_id,
-                       CONCAT(c.cus_fname, ' ', COALESCE(c.cus_mname, ''), ' ', c.cus_lname) AS cus_name,
-                       c.cus_contact,
-                       c.cus_address,
-                       c.cus_profile,
-                       c.cus_status
-                FROM customer c;";
+                // Query to retrieve customer data
+                string customerQuery = @"
+        SELECT c.cus_id,
+               CONCAT(c.cus_fname, ' ', COALESCE(c.cus_mname, ''), ' ', c.cus_lname) AS cus_name,
+               c.cus_contact,
+               c.cus_address,
+               c.cus_profile,
+               c.cus_status
+        FROM customer c;";
 
-                using (var cmd = new NpgsqlCommand(dispatcherQuery, db))
+                using (var cmd = new NpgsqlCommand(customerQuery, db))
                 using (var reader = cmd.ExecuteReader())
                 {
-                    var dispatcherTable = new DataTable();
-                    dispatcherTable.Load(reader);
-                    gridViewCustomer.DataSource = dispatcherTable;
+                    var customerTable = new DataTable();
+                    customerTable.Load(reader);
+
+                    // Apply GetProfileImage to the cus_profile column
+                    customerTable.Columns.Add("profile_image", typeof(string)); // Add new column for processed image
+
+                    foreach (DataRow row in customerTable.Rows)
+                    {
+                        // Apply GetProfileImage to the cus_profile data
+                        row["profile_image"] = GetProfileImage(row["cus_profile"]);
+                    }
+
+                    // Bind the processed data to the GridView
+                    gridViewCustomer.DataSource = customerTable;
                     gridViewCustomer.DataBind();
                 }
             }
         }
+
 
         private void BindDashboardData()
         {
