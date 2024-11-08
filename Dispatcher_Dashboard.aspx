@@ -1,4 +1,3 @@
-
 <%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Dispatcher_Dashboard.aspx.cs" Inherits="Capstone.Dispatcher_Dashboard" %>
 
 <!DOCTYPE html>
@@ -30,7 +29,7 @@
     <link href="assets/vendor/simple-datatables/style.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <!-- Template Main CSS File -->
     <link href="assets/css/style.css" rel="stylesheet">
@@ -69,62 +68,71 @@
 
 
     <style>
-   .dashboard {
-    display: flex;
-    flex-direction: column;
-    gap: 30px;
-}
-.header {
-    display: flex;
-    justify-content: space-around;
-    padding: 20px;
-    background-color: #f9f9f9;
-}
-.stat {
-    text-align: center;
-}
-.icon {
-    width: 50px;
-    height: 50px;
-    margin-bottom: 10px;
-}
-.truck-types {
-    display: flex;
-    justify-content: space-around;
-    gap: 20px;
-}
-.truck-type {
-    text-align: center;
-}
-.pie-chart {
-    width: 50%;
-    margin: 0 auto;
-    text-align: center;
-}
-.hauler-list {
-    text-align: center;
-}
-.hauler-list ul {
-    list-style: none;
-    padding: 0;
-}
-.hauler-list li {
-    padding: 5px;
-    border-bottom: 1px solid #ddd;
-}
-#vehicleSummary .count {
-    color:  #7F00FF; 
-    font-size: 26px; /* Larger font size for numbers */
-    font-weight: bold;
-}
-.scrollable-grid {
-        max-height: 600px; /* Set the max height */
-        overflow-y: auto;  /* Enable vertical scrolling */
-        overflow-x: hidden; /* Disable horizontal scrolling */
-    }
+        .dashboard {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
 
+        .header {
+            display: flex;
+            justify-content: space-around;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
 
-</style>
+        .stat {
+            text-align: center;
+        }
+
+        .icon {
+            width: 50px;
+            height: 50px;
+            margin-bottom: 10px;
+        }
+
+        .truck-types {
+            display: flex;
+            justify-content: space-around;
+            gap: 20px;
+        }
+
+        .truck-type {
+            text-align: center;
+        }
+
+        .pie-chart {
+            width: 50%;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .hauler-list {
+            text-align: center;
+        }
+
+            .hauler-list ul {
+                list-style: none;
+                padding: 0;
+            }
+
+            .hauler-list li {
+                padding: 5px;
+                border-bottom: 1px solid #ddd;
+            }
+
+        #vehicleSummary .count {
+            color: #7F00FF;
+            font-size: 26px; /* Larger font size for numbers */
+            font-weight: bold;
+        }
+
+        .scrollable-grid {
+            max-height: 600px; /* Set the max height */
+            overflow-y: auto; /* Enable vertical scrolling */
+            overflow-x: hidden; /* Disable horizontal scrolling */
+        }
+    </style>
 
 
 </head>
@@ -151,29 +159,29 @@
 
                         <li class="nav-item dropdown">
 
- 
+
                             <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow notifications">
-                              
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
 
                                 <li>
                                     <hr class="dropdown-divider">
                                 </li>
 
-                             
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+
+
 
                                 <li>
                                     <hr class="dropdown-divider">
                                 </li>
 
-                   
+
 
                                 <li>
                                     <hr class="dropdown-divider">
                                 </li>
->
+                                >
                             </ul>
                             <!-- End Notification Dropdown Items -->
 
@@ -200,7 +208,7 @@
                                     <hr class="dropdown-divider">
                                 </li>
 
-                             
+
                                 <li>
                                     <hr class="dropdown-divider">
                                 </li>
@@ -249,32 +257,44 @@
 
             <!-- ======= Sidebar ======= -->
             <aside style="padding-top: 50px" id="sidebar" class="sidebar">
-            <ul class="sidebar-nav" id="sidebar-nav">
+                <ul class="sidebar-nav" id="sidebar-nav">
 
-                <li class="nav-item">
-                    <a class="nav-link <% if (Request.Url.AbsolutePath.EndsWith("Dispatcher_Dashboard.aspx")) { %> active <% } %>" href="Dispatcher_Dashboard.aspx">
-                        <i class="bi bi-grid" style="color: aquamarine"></i>
-                        <span style="color: aquamarine">Dashboard</span>
-                    </a>
-                </li>
-                <!-- End Employee Nav -->
                     <li class="nav-item">
-                        <a class="nav-link <% if (Request.Url.AbsolutePath.EndsWith("OD_manage.aspx") || Request.Url.AbsolutePath.EndsWith("Re_AssignVehicle.aspx")) { %> active <% } %>" data-bs-target="#forms-nav" data-bs-toggle="collapse" href="#">
+                        <a class="nav-link <% if (Request.Url.AbsolutePath.EndsWith("Dispatcher_Dashboard.aspx"))
+                            { %> active <% } %>"
+                            href="Dispatcher_Dashboard.aspx">
+                            <i class="bi bi-grid" style="color: aquamarine"></i>
+                            <span style="color: aquamarine">Dashboard</span>
+                        </a>
+                    </li>
+                    <!-- End Employee Nav -->
+                    <li class="nav-item">
+                        <a class="nav-link <% if (Request.Url.AbsolutePath.EndsWith("OD_manage.aspx") || Request.Url.AbsolutePath.EndsWith("Re_AssignVehicle.aspx"))
+                            { %> active <% } %>"
+                            data-bs-target="#forms-nav" data-bs-toggle="collapse" href="#">
                             <i class="bi bi-people"></i><span>Manage Actions</span><i class="bi bi-chevron-down ms-auto"></i>
                         </a>
-                        <ul id="forms-nav" class="nav-content collapse <% if (Request.Url.AbsolutePath.EndsWith("OD_manage.aspx") || Request.Url.AbsolutePath.EndsWith("Re_AssignVehicle.aspx")) { %> show <% } %>" data-bs-parent="#sidebar-nav">
+                        <ul id="forms-nav" class="nav-content collapse <% if (Request.Url.AbsolutePath.EndsWith("OD_manage.aspx") || Request.Url.AbsolutePath.EndsWith("Re_AssignVehicle.aspx"))
+                            { %> show <% } %>"
+                            data-bs-parent="#sidebar-nav">
                             <li>
-                                <a class="<% if (Request.Url.AbsolutePath.EndsWith("OD_manage.aspx")) { %> active <% } %>" href="OD_manage.aspx">
+                                <a class="<% if (Request.Url.AbsolutePath.EndsWith("OD_manage.aspx"))
+                                    { %> active <% } %>"
+                                    href="OD_manage.aspx">
                                     <i class="bi bi-circle"></i><span>Manage Vehicle and Haulers</span>
                                 </a>
                             </li>
                             <li>
-                                <a class="<% if (Request.Url.AbsolutePath.EndsWith("Re_AssignVehicle.aspx")) { %> active <% } %>" href="Re_AssignVehicle.aspx">
+                                <a class="<% if (Request.Url.AbsolutePath.EndsWith("Re_AssignVehicle.aspx"))
+                                    { %> active <% } %>"
+                                    href="Re_AssignVehicle.aspx">
                                     <i class="bi bi-circle"></i><span>Assigns and Controls</span>
                                 </a>
                             </li>
                             <li>
-                                <a class="<% if (Request.Url.AbsolutePath.EndsWith("Dispatcher_AddSlip.aspx")) { %> active <% } %>" href="Dispatcher_AddSlip.aspx">
+                                <a class="<% if (Request.Url.AbsolutePath.EndsWith("Dispatcher_AddSlip.aspx"))
+                                    { %> active <% } %>"
+                                    href="Dispatcher_AddSlip.aspx">
                                     <i class="bi bi-circle"></i><span>Manage Truck Scale Slip</span>
                                 </a>
                             </li>
@@ -282,15 +302,15 @@
                     </li>
 
 
-            </ul>
-        </aside>
+                </ul>
+            </aside>
 
             <!-- End Sidebar-->
 
             <main id="main" class="main">
 
                 <div class="pagetitle">
-                    <h1 style="padding-top: 20px; color: chartreuse; font-size: 24px;" >Operational Dispatcher</h1>
+                    <h1 style="padding-top: 20px; color: chartreuse; font-size: 24px;">Operational Dispatcher</h1>
                     <nav>
                         <ol class="breadcrumb">
                             <li class="breadcrumb-item"><a href="WAREHOUSE_DASHBOARD.aspx" style="font-size: 18px;">Management</a></li>
@@ -317,157 +337,193 @@
 
                     </div>
                 </section>
-                   <!-- Start General Form Elements -->
-                    <%--#043002--%>
-                    <section style="background-color: #052507; padding: 50px; border-radius: 8px; box-shadow: 0 0 5px rgba(0, 0, 0, .2)">
-                        <section class="section dashboard">
-                            <div class="row" style="padding: 20px;">
-                                <!-- Left side columns -->
-                                <div class="col-lg-12">
-                                    <div class="row">
+                <!-- Start General Form Elements -->
+                <%--#043002--%>
+                <section style="background-color: #052507; padding: 50px; border-radius: 8px; box-shadow: 0 0 5px rgba(0, 0, 0, .2)">
+                    <section class="section dashboard">
+                        <div class="row" style="padding: 20px;">
+                            <!-- Left side columns -->
+                            <div class="col-lg-12">
+                                <div class="row">
 
-                                        <!-- Haulers Card -->
-                                        <div class="col-lg-6" style="background-color: #052507">
-                                            <div class="card info-card sales-card" style="background-color: #052507">
-                                                <div class="card-body" style="background-color: #053203; border-radius: 15px">
-                                                    <h5 class="card-title" style="color: chartreuse">Total Haulers</h5>
-                                                    <div class="d-flex align-items-center">
-                                                        <div class="card-icon rounded-circle d-flex align-items-center justify-content-center" style="background-color: #053203">
-                                                            <i class="bi bi-people" style="color: #cb3ee4;"></i>
-                                                        </div>
-                                                        <div class="ps-3" style="background-color: #053203">
-                                                            <h6>
-                                                                <asp:Label ID="totalhauler" runat="server" CssClass="form-control" ReadOnly="true" Style="background-color: transparent; color: aquamarine; font-size: 40px; font-weight: 800"></asp:Label>
-                                                            </h6>
-                                                        </div>
+                                    <!-- Haulers Card -->
+                                    <div class="col-lg-6" style="background-color: #052507">
+                                        <div class="card info-card sales-card" style="background-color: #052507">
+                                            <div class="card-body" style="background-color: #053203; border-radius: 15px">
+                                                <h5 class="card-title" style="color: chartreuse">Total Haulers</h5>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="card-icon rounded-circle d-flex align-items-center justify-content-center" style="background-color: #053203">
+                                                        <i class="bi bi-people" style="color: #cb3ee4;"></i>
+                                                    </div>
+                                                    <div class="ps-3" style="background-color: #053203">
+                                                        <h6>
+                                                            <asp:Label ID="totalhauler" runat="server" CssClass="form-control" ReadOnly="true" Style="background-color: transparent; color: aquamarine; font-size: 40px; font-weight: 800"></asp:Label>
+                                                        </h6>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                        <!-- End Haulers Card -->
-
-                                        <!-- Vehicles Card -->
-                                        <div class="col-lg-6" style="background-color: #052507">
-                                            <div class="card info-card sales-card" style="background-color: #052507">
-                                                <div class="card-body" style="background-color: #053203; border-radius: 15px">
-                                                    <h5 class="card-title" style="color: chartreuse">Total Vehicles</h5>
-                                                    <div class="d-flex align-items-center">
-                                                        <div class="card-icon rounded-circle d-flex align-items-center justify-content-center" style="background-color: #053203">
-                                                            <i class="bi bi-truck" style="color: #cb3ee4;"></i>
-                                                        </div>
-                                                        <div class="ps-3" style="background-color: #053203">
-                                                            <h6>
-                                                                <asp:Label ID="totalvehicle" runat="server" CssClass="form-control" ReadOnly="true" Style="background-color: transparent; color: aquamarine; font-size: 40px; font-weight: 800"></asp:Label>
-                                                            </h6>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                             <!-- End Vehicles Card -->
-                           <!-- Start Vehicles Pie Chart -->
-                        <div class="col-lg-12" style="padding: 20px; border-radius: 15px;">
-                            <div class="card-body" style="background-color: #053203; border-radius: 15px; padding: 20px;">
-                                <h5 class="card-title" style="color: chartreuse; text-align: left; font-size: 24px;">Vehicle Availability</h5>
-
-                              
-                                    <!-- Centered Pie Chart -->
-                                    <div style="flex: 1; display: flex; justify-content: center; align-items: center; max-width: 100%; overflow: hidden;">
-                                        <canvas id="vehicleAvailabilityChart" width="500" height="500"></canvas>
                                     </div>
+                                    <!-- End Haulers Card -->
 
-                                    <!-- Legends aligned to the left bottom (positioned directly under the chart) -->
-                                    <div id="vehicleLegend" style="display: flex; flex-direction: column; gap: 10px; padding-top: 20px; padding-left: 20px; max-height: 200px; overflow-y: auto;">
-                                        <!-- Legend items will be populated here dynamically -->
+                                    <!-- Vehicles Card -->
+                                    <div class="col-lg-6" style="background-color: #052507">
+                                        <div class="card info-card sales-card" style="background-color: #052507">
+                                            <div class="card-body" style="background-color: #053203; border-radius: 15px">
+                                                <h5 class="card-title" style="color: chartreuse">Total Vehicles</h5>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="card-icon rounded-circle d-flex align-items-center justify-content-center" style="background-color: #053203">
+                                                        <i class="bi bi-truck" style="color: #cb3ee4;"></i>
+                                                    </div>
+                                                    <div class="ps-3" style="background-color: #053203">
+                                                        <h6>
+                                                            <asp:Label ID="totalvehicle" runat="server" CssClass="form-control" ReadOnly="true" Style="background-color: transparent; color: aquamarine; font-size: 40px; font-weight: 800"></asp:Label>
+                                                        </h6>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- End Vehicles Card -->
+                                    <!-- Start Vehicles Pie Chart -->
+                                    <div class="col-lg-12" style="padding: 20px; border-radius: 15px;">
+                                        <div class="card-body" style="background-color: #053203; border-radius: 15px; padding: 20px;">
+                                            <h5 class="card-title" style="color: chartreuse; text-align: left; font-size: 24px;">Vehicle Availability</h5>
+
+
+                                            <!-- Centered Pie Chart -->
+                                            <div style="flex: 1; display: flex; justify-content: center; align-items: center; max-width: 100%; overflow: hidden;">
+                                                <canvas id="vehicleAvailabilityChart" width="500" height="500"></canvas>
+                                            </div>
+
+                                            <!-- Legends aligned to the left bottom (positioned directly under the chart) -->
+                                            <div id="vehicleLegend" style="display: flex; flex-direction: column; gap: 10px; padding-top: 20px; padding-left: 20px; max-height: 200px; overflow-y: auto;">
+                                                <!-- Legend items will be populated here dynamically -->
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                        <!-- End Vehicles Pie Chart -->
+                                <!-- End Vehicles Pie Chart -->
 
 
-                       <!-- Start Image Buttons for Lists -->
-                        <div class="image-buttons-container" style="display: flex; gap: 25px; justify-content: center; margin-top: 30px;">
+                                <!-- Start Image Buttons for Lists -->
+                                <div class="image-buttons-container" style="display: flex; gap: 25px; justify-content: center; margin-top: 30px;">
 
-                            <!-- Container for List of Haulers -->
-                            <div style="width: 420px; height: 130px; background-color: #053203; border-radius: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);" onclick="imgBtnHauler_Click();">
-                                <asp:ImageButton ID="imgBtnHauler" runat="server" ImageUrl="~/Pictures/driver.png"
-                                                 OnClick="imgBtnHauler_Click" 
-                                                 style="width: 70px; height: 70px; background: none; border: none;" />
-                                <div style="color: white;">View Hauler List</div>
-                            </div>
+                                    <!-- Container for List of Haulers -->
+                                    <div style="width: 420px; height: 130px; background-color: #053203; border-radius: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);" onclick="imgBtnHauler_Click();">
+                                        <asp:ImageButton ID="imgBtnHauler" runat="server" ImageUrl="~/Pictures/driver.png"
+                                            OnClick="imgBtnHauler_Click"
+                                            Style="width: 70px; height: 70px; background: none; border: none;" />
+                                        <div style="color: white;">View Hauler List</div>
+                                    </div>
 
-                            <!-- Container for List of Dispatchers -->
-                            <div style="width: 420px; height: 130px; background-color: #053203; border-radius: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);" onclick="imgBtnDispatcher_Click();">
-                                <asp:ImageButton ID="imgBtnDispatcher" runat="server" ImageUrl="~/Pictures/working_man.png"
-                                                 OnClick="imgBtnDispatcher_Click" 
-                                                 style="width: 70px; height: 70px; background: none; border: none;" />
-                                <div style="color: white;">View Dispatcher List</div>
-                            </div>
+                                    <!-- Container for List of Dispatchers -->
+                                    <div style="width: 420px; height: 130px; background-color: #053203; border-radius: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);" onclick="imgBtnDispatcher_Click();">
+                                        <asp:ImageButton ID="imgBtnDispatcher" runat="server" ImageUrl="~/Pictures/working_man.png"
+                                            OnClick="imgBtnDispatcher_Click"
+                                            Style="width: 70px; height: 70px; background: none; border: none;" />
+                                        <div style="color: white;">View Dispatcher List</div>
+                                    </div>
 
-                            <!-- Container for List of Customers -->
-                            <div style="width: 420px; height: 130px; background-color: #053203; border-radius: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);" onclick="imgBtnCustomer_Click();">
-                                <asp:ImageButton ID="imgBtnCustomer" runat="server" ImageUrl="~/Pictures/customer.png"
-                                                 OnClick="imgBtnCustomer_Click" 
-                                                 style="width: 70px; height: 70px; background: none; border: none;" />
-                                <div style="color: white;">View Customer List</div>
-                            </div>
+                                    <!-- Container for List of Customers -->
+                                    <div style="width: 420px; height: 130px; background-color: #053203; border-radius: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);" onclick="imgBtnCustomer_Click();">
+                                        <asp:ImageButton ID="imgBtnCustomer" runat="server" ImageUrl="~/Pictures/customer.png"
+                                            OnClick="imgBtnCustomer_Click"
+                                            Style="width: 70px; height: 70px; background: none; border: none;" />
+                                        <div style="color: white;">View Customer List</div>
+                                    </div>
 
-                        </div>
-                        <!-- End Image Buttons for Lists -->
+                                </div>
+                                <!-- End Image Buttons for Lists -->
 
-                <!-- Modal for List of Dispatchers -->
-                <asp:LinkButton ID="LinkButton1" runat="server"  OnClick="LinkButton1_Click"></asp:LinkButton>
-                 <asp:ScriptManager ID="ScriptManager1" runat="server"></asp:ScriptManager>
-                <asp:Panel ID="updatePanel" CssClass="card shadow-lg scrollable-panel" runat="server"
-                    Style="background-color: #052507; border: 1px solid aquamarine; border-radius: 8px; width: 100%; max-width: 1500px; margin: auto;">
-                    <ContentTemplate>
-                        <div class="gridview-container scrollable-grid" style="height: 600px; overflow-y: auto;">
-                            <asp:GridView Style="width: 100%; word-break: break-all; table-layout: fixed"
-                                ID="gridViewDispatcher" runat="server" AutoGenerateColumns="False" ShowHeaderWhenEmpty="True"
-                                DataKeyNames="emp_id" AllowPaging="False" CellPadding="20" GridLines="None">
-                                <HeaderStyle BackColor="#f8f9fa" ForeColor="#343a40" Font-Bold="True" />
-                                <Columns>
-                                    <asp:BoundField DataField="emp_id" HeaderText="Employee ID" ReadOnly="True">
-                                        <ItemStyle Width="100px" ForeColor="cyan" />
-                                    </asp:BoundField>
-                                    <asp:BoundField DataField="emp_name" HeaderText="Names">
-                                        <ItemStyle Width="100px" ForeColor="cyan" />
-                                    </asp:BoundField>
-                                    <asp:BoundField DataField="emp_contact" HeaderText="Contact">
-                                        <ItemStyle Width="100px" ForeColor="cyan" />
-                                    </asp:BoundField>
-                                    <asp:BoundField DataField="emp_address" HeaderText="Address">
-                                        <ItemStyle Width="200px" ForeColor="cyan" />
-                                    </asp:BoundField>
-                                    <asp:BoundField DataField="emp_profile" HeaderText="Profile">
-                                        <ItemStyle Width="100px" ForeColor="cyan" />
-                                    </asp:BoundField>
-                                    <asp:BoundField DataField="emp_status" HeaderText="Status">
-                                        <ItemStyle Width="100px" ForeColor="cyan" />
-                                    </asp:BoundField>
-                                </Columns>
-                            </asp:GridView>
-                        </div>
-                        <div class="card-footer" style="background-color: #052507; color: aquamarine; text-align: right;">
-                            <asp:Button ID="btnclose" CssClass="btn btn-secondary" runat="server" Text="Close" OnClick="btnClose_Click" />
-                        </div>
-                    </ContentTemplate>
-                </asp:Panel>
+                                <!-- Modal for List of Dispatchers -->
+                                <asp:LinkButton ID="LinkButton1" runat="server" OnClick="LinkButton1_Click"></asp:LinkButton>
+                                <asp:ScriptManager ID="ScriptManager1" runat="server"></asp:ScriptManager>
+                                <asp:Panel ID="updatePanel" CssClass="card shadow-lg scrollable-panel" runat="server"
+                                    Style="background-color: #052507; border: 1px solid aquamarine; border-radius: 8px; width: 100%; max-width: 1500px; margin: auto;">
+                                    <contenttemplate>
+                                        <div class="gridview-container scrollable-grid" style="height: 600px; overflow-y: auto;">
+                                            <%-- Original GridView for Dispatcher --%>
+                                            <%--      <asp:GridView Style="width: 100%; word-break: break-all; table-layout: fixed"
+                                                ID="gridViewDispatcher" runat="server" AutoGenerateColumns="False" ShowHeaderWhenEmpty="True"
+                                                DataKeyNames="emp_id" AllowPaging="False" CellPadding="20" GridLines="None">
+                                                <HeaderStyle BackColor="#f8f9fa" ForeColor="#343a40" Font-Bold="True" />
+                                                <Columns>
+                                                    <asp:BoundField DataField="emp_id" HeaderText="Employee ID" ReadOnly="True">
+                                                        <ItemStyle Width="100px" ForeColor="cyan" />
+                                                    </asp:BoundField>
+                                                    <asp:BoundField DataField="emp_name" HeaderText="Names">
+                                                        <ItemStyle Width="100px" ForeColor="cyan" />
+                                                    </asp:BoundField>
+                                                    <asp:BoundField DataField="emp_contact" HeaderText="Contact">
+                                                        <ItemStyle Width="100px" ForeColor="cyan" />
+                                                    </asp:BoundField>
+                                                    <asp:BoundField DataField="emp_address" HeaderText="Address">
+                                                        <ItemStyle Width="200px" ForeColor="cyan" />
+                                                    </asp:BoundField>
+                                                    <asp:BoundField DataField="emp_profile" HeaderText="Profile">
+                                                        <ItemStyle Width="100px" ForeColor="cyan" />
+                                                    </asp:BoundField>
+                                                    <asp:BoundField DataField="emp_status" HeaderText="Status">
+                                                        <ItemStyle Width="100px" ForeColor="cyan" />
+                                                    </asp:BoundField>
+                                                </Columns>
+                                            </asp:GridView>--%>
 
-                <ajaxToolkit:ModalPopupExtender ID="ModalPopupExtender1" runat="server"
-                    CancelControlID="btnclose" PopupControlID="updatePanel" TargetControlID="LinkButton1"
-                    BackgroundCssClass="Background" DropShadow="True">
-                </ajaxToolkit:ModalPopupExtender>
+                                            <asp:GridView Style="width: 100%; word-break: break-all; table-layout: fixed"
+                                                ID="gridViewDispatcher" runat="server" AutoGenerateColumns="False" ShowHeaderWhenEmpty="True"
+                                                DataKeyNames="emp_id" AllowPaging="False" CellPadding="20" GridLines="None">
+                                                <HeaderStyle BackColor="#f8f9fa" ForeColor="#343a40" Font-Bold="True" />
+                                                <Columns>
+                                                    <asp:BoundField DataField="emp_id" HeaderText="Employee ID" ReadOnly="True">
+                                                        <ItemStyle Width="100px" ForeColor="cyan" />
+                                                    </asp:BoundField>
+                                                    <asp:BoundField DataField="emp_name" HeaderText="Names">
+                                                        <ItemStyle Width="100px" ForeColor="cyan" />
+                                                    </asp:BoundField>
+                                                    <asp:BoundField DataField="emp_contact" HeaderText="Contact">
+                                                        <ItemStyle Width="100px" ForeColor="cyan" />
+                                                    </asp:BoundField>
+                                                    <asp:BoundField DataField="emp_address" HeaderText="Address">
+                                                        <ItemStyle Width="200px" ForeColor="cyan" />
+                                                    </asp:BoundField>
 
-                <!-- Modal for List of Haulers -->
-                <asp:LinkButton ID="LinkButton2" runat="server" Toolkit="View Hauler List" OnClick="LinkButton2_Click"></asp:LinkButton>
 
-                <asp:Panel ID="Panel1" CssClass="card shadow-lg scrollable-panel" runat="server"
-                    Style="background-color: #052507; border: 1px solid aquamarine; border-radius: 8px; width: 100%; max-width: 1500px; margin: auto;">
-                    <ContentTemplate>
-                        <div class="gridview-container scrollable-grid" style="height: 600px; overflow-y: auto;">
-                            <asp:GridView Style="width: 100%; word-break: break-all; table-layout: fixed"
+                                                    <asp:TemplateField HeaderText="Profile">
+                                                        <ItemTemplate>
+                                                            <asp:Image ID="imgProfile" runat="server"
+                                                                ImageUrl='<%# Eval("profile_image") %>'
+                                                                Width="100px" Height="100px" />
+                                                        </ItemTemplate>
+                                                    </asp:TemplateField>
+
+                                                    <asp:BoundField DataField="emp_status" HeaderText="Status">
+                                                        <ItemStyle Width="100px" ForeColor="cyan" />
+                                                    </asp:BoundField>
+                                                </Columns>
+                                            </asp:GridView>
+
+                                        </div>
+                                        <div class="card-footer" style="background-color: #052507; color: aquamarine; text-align: right;">
+                                            <asp:Button ID="btnclose" CssClass="btn btn-secondary" runat="server" Text="Close" OnClick="btnClose_Click" />
+                                        </div>
+                                    </contenttemplate>
+                                </asp:Panel>
+
+                                <ajaxToolkit:ModalPopupExtender ID="ModalPopupExtender1" runat="server"
+                                    CancelControlID="btnclose" PopupControlID="updatePanel" TargetControlID="LinkButton1"
+                                    BackgroundCssClass="Background" DropShadow="True">
+                                </ajaxToolkit:ModalPopupExtender>
+
+                                <!-- Modal for List of Haulers -->
+                                <asp:LinkButton ID="LinkButton2" runat="server" Toolkit="View Hauler List" OnClick="LinkButton2_Click"></asp:LinkButton>
+
+                                <asp:Panel ID="Panel1" CssClass="card shadow-lg scrollable-panel" runat="server"
+                                    Style="background-color: #052507; border: 1px solid aquamarine; border-radius: 8px; width: 100%; max-width: 1500px; margin: auto;">
+                                    <contenttemplate>
+                                        <div class="gridview-container scrollable-grid" style="height: 600px; overflow-y: auto;">
+                                            <%-- Original Code --%>
+                                            <%-- <asp:GridView Style="width: 100%; word-break: break-all; table-layout: fixed"
                                 ID="gridViewHauler" runat="server" AutoGenerateColumns="False" ShowHeaderWhenEmpty="True"
                                 DataKeyNames="emp_id" AllowPaging="False" CellPadding="20" GridLines="None">
                                 <HeaderStyle BackColor="#f8f9fa" ForeColor="#343a40" Font-Bold="True" />
@@ -484,6 +540,7 @@
                                     <asp:BoundField DataField="emp_address" HeaderText="Address">
                                         <ItemStyle Width="200px" ForeColor="cyan" />
                                     </asp:BoundField>
+
                                     <asp:BoundField DataField="emp_profile" HeaderText="Profile">
                                         <ItemStyle Width="100px" ForeColor="cyan" />
                                     </asp:BoundField>
@@ -491,158 +548,230 @@
                                         <ItemStyle Width="100px" ForeColor="cyan" />
                                     </asp:BoundField>
                                 </Columns>
-                            </asp:GridView>
-                        </div>
-                        <div class="card-footer" style="background-color: #052507; color: aquamarine; text-align: right;">
-                            <asp:Button ID="btnclose1" CssClass="btn btn-secondary" runat="server" Text="Close" OnClick="btnClose1_Click" />
-                        </div>
-                    </ContentTemplate>
-                </asp:Panel>
+                            </asp:GridView>--%>
 
-                <ajaxToolkit:ModalPopupExtender ID="ModalPopupExtender2" runat="server"
-                    CancelControlID="btnclose1" PopupControlID="Panel1" TargetControlID="LinkButton2"
-                    BackgroundCssClass="Background" DropShadow="True">
-                </ajaxToolkit:ModalPopupExtender>
-                        <!-- Modal for List of Customers -->
-<asp:LinkButton ID="LinkButton3" runat="server" Toolkit="View Hauler List" OnClick="LinkButton3_Click"></asp:LinkButton>
+                                            <asp:GridView Style="width: 100%; word-break: break-all; table-layout: fixed"
+                                                ID="gridViewHauler" runat="server" AutoGenerateColumns="False" ShowHeaderWhenEmpty="True"
+                                                DataKeyNames="emp_id" AllowPaging="False" CellPadding="20" GridLines="None">
+                                                <HeaderStyle BackColor="#f8f9fa" ForeColor="#343a40" Font-Bold="True" />
+                                                <Columns>
+                                                    <asp:BoundField DataField="emp_id" HeaderText="Employee ID" ReadOnly="True">
+                                                        <ItemStyle Width="100px" ForeColor="cyan" />
+                                                    </asp:BoundField>
+                                                    <asp:BoundField DataField="emp_name" HeaderText="Names">
+                                                        <ItemStyle Width="100px" ForeColor="cyan" />
+                                                    </asp:BoundField>
+                                                    <asp:BoundField DataField="emp_contact" HeaderText="Contact">
+                                                        <ItemStyle Width="100px" ForeColor="cyan" />
+                                                    </asp:BoundField>
+                                                    <asp:BoundField DataField="emp_address" HeaderText="Address">
+                                                        <ItemStyle Width="200px" ForeColor="cyan" />
+                                                    </asp:BoundField>
 
-<asp:Panel ID="Panel2" CssClass="card shadow-lg scrollable-panel" runat="server"
-    Style="background-color: #052507; border: 1px solid aquamarine; border-radius: 8px; width: 100%; max-width: 1500px; margin: auto;">
-    <ContentTemplate>
-        <div class="gridview-container scrollable-grid" style="height: 600px; overflow-y: auto;">
-            <asp:GridView Style="width: 100%; word-break: break-all; table-layout: fixed"
-                ID="gridViewCustomer" runat="server" AutoGenerateColumns="False" ShowHeaderWhenEmpty="True"
-                DataKeyNames="cus_id" AllowPaging="False" CellPadding="20" GridLines="None">
-                <HeaderStyle BackColor="#f8f9fa" ForeColor="#343a40" Font-Bold="True" />
-                <Columns>
-                    <asp:BoundField DataField="cus_id" HeaderText="Employee ID" ReadOnly="True">
-                        <ItemStyle Width="100px" ForeColor="cyan" />
-                    </asp:BoundField>
-                    <asp:BoundField DataField="cus_name" HeaderText="Names">
-                        <ItemStyle Width="100px" ForeColor="cyan" />
-                    </asp:BoundField>
-                    <asp:BoundField DataField="cus_contact" HeaderText="Contact">
-                        <ItemStyle Width="100px" ForeColor="cyan" />
-                    </asp:BoundField>
-                    <asp:BoundField DataField="cus_address" HeaderText="Address">
-                        <ItemStyle Width="200px" ForeColor="cyan" />
-                    </asp:BoundField>
-                    <asp:BoundField DataField="cus_profile" HeaderText="Profile">
-                        <ItemStyle Width="100px" ForeColor="cyan" />
-                    </asp:BoundField>
-                    <asp:BoundField DataField="cus_status" HeaderText="Status">
-                        <ItemStyle Width="100px" ForeColor="cyan" />
-                    </asp:BoundField>
-                </Columns>
-            </asp:GridView>
-        </div>
-        <div class="card-footer" style="background-color: #052507; color: aquamarine; text-align: right;">
-            <asp:Button ID="btnclose2" CssClass="btn btn-secondary" runat="server" Text="Close" OnClick="btnClose2_Click" />
-        </div>
-    </ContentTemplate>
-</asp:Panel>
 
-<ajaxToolkit:ModalPopupExtender ID="ModalPopupExtender3" runat="server"
-    CancelControlID="btnclose2" PopupControlID="Panel2" TargetControlID="LinkButton3"
-    BackgroundCssClass="Background" DropShadow="True">
-</ajaxToolkit:ModalPopupExtender>
-              
-            </section>
-            <!-- End General Form Elements -->
-          <asp:Literal ID="vehicleAvailabilityLiteral" runat="server"></asp:Literal>
-                <script type="text/javascript">
-                    // Inject the data from the Literal control into a global JavaScript variable
-                    var vehicleData = JSON.parse('<%= vehicleAvailabilityLiteral.Text %>');
+                                                    <asp:TemplateField HeaderText="Profile">
+                                                        <ItemTemplate>
+                                                            <asp:Image ID="imgProfile" runat="server"
+                                                                ImageUrl='<%# GetProfileImage(Eval("emp_profile")) %>'
+                                                                Width="100px" Height="100px" />
+                                                        </ItemTemplate>
+                                                    </asp:TemplateField>
 
-                    // Function to generate a dynamic array of distinct colors
-                    function generateDistinctColors(numColors) {
-                        let colors = [];
-                        const hueStep = 360 / numColors; // Step for hue to create distinct colors
-                        for (let i = 0; i < numColors; i++) {
-                            let hue = i * hueStep;  // Calculate a unique hue for each color
-                            let color = `hsl(${hue}, 70%, 60%)`; // Use HSL color model for good color diversity
-                            colors.push(color);
+                                                    <asp:BoundField DataField="emp_status" HeaderText="Status">
+                                                        <ItemStyle Width="100px" ForeColor="cyan" />
+                                                    </asp:BoundField>
+                                                </Columns>
+                                            </asp:GridView>
+
+                                        </div>
+                                        <div class="card-footer" style="background-color: #052507; color: aquamarine; text-align: right;">
+                                            <asp:Button ID="btnclose1" CssClass="btn btn-secondary" runat="server" Text="Close" OnClick="btnClose1_Click" />
+                                        </div>
+                                    </contenttemplate>
+                                </asp:Panel>
+
+                                <ajaxToolkit:ModalPopupExtender ID="ModalPopupExtender2" runat="server"
+                                    CancelControlID="btnclose1" PopupControlID="Panel1" TargetControlID="LinkButton2"
+                                    BackgroundCssClass="Background" DropShadow="True">
+                                </ajaxToolkit:ModalPopupExtender>
+                                <!-- Modal for List of Customers -->
+                                <asp:LinkButton ID="LinkButton3" runat="server" Toolkit="View Hauler List" OnClick="LinkButton3_Click"></asp:LinkButton>
+
+                                <asp:Panel ID="Panel2" CssClass="card shadow-lg scrollable-panel" runat="server"
+                                    Style="background-color: #052507; border: 1px solid aquamarine; border-radius: 8px; width: 100%; max-width: 1500px; margin: auto;">
+                                    <contenttemplate>
+                                        <div class="gridview-container scrollable-grid" style="height: 600px; overflow-y: auto;">
+                                            <%-- Original GridView for Customer --%>
+                                            <%-- <asp:GridView Style="width: 100%; word-break: break-all; table-layout: fixed"
+                                                ID="gridViewCustomer" runat="server" AutoGenerateColumns="False" ShowHeaderWhenEmpty="True"
+                                                DataKeyNames="cus_id" AllowPaging="False" CellPadding="20" GridLines="None">
+                                                <HeaderStyle BackColor="#f8f9fa" ForeColor="#343a40" Font-Bold="True" />
+                                                <Columns>
+                                                    <asp:BoundField DataField="cus_id" HeaderText="Employee ID" ReadOnly="True">
+                                                        <ItemStyle Width="100px" ForeColor="cyan" />
+                                                    </asp:BoundField>
+                                                    <asp:BoundField DataField="cus_name" HeaderText="Names">
+                                                        <ItemStyle Width="100px" ForeColor="cyan" />
+                                                    </asp:BoundField>
+                                                    <asp:BoundField DataField="cus_contact" HeaderText="Contact">
+                                                        <ItemStyle Width="100px" ForeColor="cyan" />
+                                                    </asp:BoundField>
+                                                    <asp:BoundField DataField="cus_address" HeaderText="Address">
+                                                        <ItemStyle Width="200px" ForeColor="cyan" />
+                                                    </asp:BoundField>
+                                                    <asp:TemplateField HeaderText="Profile">
+                                                        <ItemTemplate>
+                                                            <asp:Image ID="imgProfile" runat="server"
+                                                                ImageUrl='<%# GetProfileImage(Eval("emp_profile")) %>'
+                                                                Width="100px" Height="100px" />
+                                                        </ItemTemplate>
+                                                    </asp:TemplateField>
+                                                    <asp:BoundField DataField="cus_status" HeaderText="Status">
+                                                        <ItemStyle Width="100px" ForeColor="cyan" />
+                                                    </asp:BoundField>
+                                                </Columns>
+                                            </asp:GridView>--%>
+
+                                            <asp:GridView Style="width: 100%; word-break: break-all; table-layout: fixed"
+                                                ID="gridViewCustomer" runat="server" AutoGenerateColumns="False" ShowHeaderWhenEmpty="True"
+                                                DataKeyNames="cus_id" AllowPaging="False" CellPadding="20" GridLines="None">
+                                                <HeaderStyle BackColor="#f8f9fa" ForeColor="#343a40" Font-Bold="True" />
+                                                <Columns>
+                                                    <asp:BoundField DataField="cus_id" HeaderText="Customer ID" ReadOnly="True">
+                                                        <ItemStyle Width="100px" ForeColor="cyan" />
+                                                    </asp:BoundField>
+                                                    <asp:BoundField DataField="cus_name" HeaderText="Customer Name">
+                                                        <ItemStyle Width="100px" ForeColor="cyan" />
+                                                    </asp:BoundField>
+                                                    <asp:BoundField DataField="cus_contact" HeaderText="Contact">
+                                                        <ItemStyle Width="100px" ForeColor="cyan" />
+                                                    </asp:BoundField>
+                                                    <asp:BoundField DataField="cus_address" HeaderText="Address">
+                                                        <ItemStyle Width="200px" ForeColor="cyan" />
+                                                    </asp:BoundField>
+
+
+                                                    <asp:TemplateField HeaderText="Profile">
+                                                        <ItemTemplate>
+                                                            <asp:Image ID="imgProfile" runat="server"
+                                                                ImageUrl='<%# Eval("profile_image") %>'
+                                                                Width="100px" Height="100px" />
+                                                        </ItemTemplate>
+                                                    </asp:TemplateField>
+
+                                                    <asp:BoundField DataField="cus_status" HeaderText="Status">
+                                                        <ItemStyle Width="100px" ForeColor="cyan" />
+                                                    </asp:BoundField>
+                                                </Columns>
+                                            </asp:GridView>
+
+
+
+                                        </div>
+                                        <div class="card-footer" style="background-color: #052507; color: aquamarine; text-align: right;">
+                                            <asp:Button ID="btnclose2" CssClass="btn btn-secondary" runat="server" Text="Close" OnClick="btnClose2_Click" />
+                                        </div>
+                                    </contenttemplate>
+                                </asp:Panel>
+
+                                <ajaxToolkit:ModalPopupExtender ID="ModalPopupExtender3" runat="server"
+                                    CancelControlID="btnclose2" PopupControlID="Panel2" TargetControlID="LinkButton3"
+                                    BackgroundCssClass="Background" DropShadow="True">
+                                </ajaxToolkit:ModalPopupExtender>
+                    </section>
+                    <!-- End General Form Elements -->
+                    <asp:Literal ID="vehicleAvailabilityLiteral" runat="server"></asp:Literal>
+                    <script type="text/javascript">
+                        // Inject the data from the Literal control into a global JavaScript variable
+                        var vehicleData = JSON.parse('<%= vehicleAvailabilityLiteral.Text %>');
+
+                        // Function to generate a dynamic array of distinct colors
+                        function generateDistinctColors(numColors) {
+                            let colors = [];
+                            const hueStep = 360 / numColors; // Step for hue to create distinct colors
+                            for (let i = 0; i < numColors; i++) {
+                                let hue = i * hueStep;  // Calculate a unique hue for each color
+                                let color = `hsl(${hue}, 70%, 60%)`; // Use HSL color model for good color diversity
+                                colors.push(color);
+                            }
+                            return colors;
                         }
-                        return colors;
-                    }
 
-                    // Prepare chart data
-                    var ctx = document.getElementById('vehicleAvailabilityChart').getContext('2d');
+                        // Prepare chart data
+                        var ctx = document.getElementById('vehicleAvailabilityChart').getContext('2d');
 
-                    // Generate a dynamic color palette based on the number of labels
-                    var colorPalette = generateDistinctColors(vehicleData.labels.length);
+                        // Generate a dynamic color palette based on the number of labels
+                        var colorPalette = generateDistinctColors(vehicleData.labels.length);
 
-                    var vehicleAvailabilityChart = new Chart(ctx, {
-                        type: 'pie',  // Pie chart type
-                        data: {
-                            labels: vehicleData.labels,  // Vehicle type names
-                            datasets: [{
-                                label: 'Vehicle Availability',
-                                data: vehicleData.data,  // Vehicle counts
-                                backgroundColor: colorPalette,  // Use dynamic colors
-                                hoverOffset: 4
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,  // Allow the chart to stretch or resize freely
-                            aspectRatio: 1,  // Maintain a 1:1 aspect ratio (keep the pie chart circular)
-                            layout: {
-                                padding: {
-                                    bottom: 50,  // Adjust padding to ensure there's space for the legend
-                                }
+                        var vehicleAvailabilityChart = new Chart(ctx, {
+                            type: 'pie',  // Pie chart type
+                            data: {
+                                labels: vehicleData.labels,  // Vehicle type names
+                                datasets: [{
+                                    label: 'Vehicle Availability',
+                                    data: vehicleData.data,  // Vehicle counts
+                                    backgroundColor: colorPalette,  // Use dynamic colors
+                                    hoverOffset: 4
+                                }]
                             },
-                            plugins: {
-                                legend: {
-                                    display: false  // Hide the default legend
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,  // Allow the chart to stretch or resize freely
+                                aspectRatio: 1,  // Maintain a 1:1 aspect ratio (keep the pie chart circular)
+                                layout: {
+                                    padding: {
+                                        bottom: 50,  // Adjust padding to ensure there's space for the legend
+                                    }
                                 },
-                                tooltip: {
-                                    callbacks: {
-                                        label: function (tooltipItem) {
-                                            return tooltipItem.label + ': ' + tooltipItem.raw + ' Vehicles';
+                                plugins: {
+                                    legend: {
+                                        display: false  // Hide the default legend
+                                    },
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function (tooltipItem) {
+                                                return tooltipItem.label + ': ' + tooltipItem.raw + ' Vehicles';
+                                            }
                                         }
                                     }
                                 }
                             }
-                        }
-                    });
+                        });
 
-                    // Dynamically create and populate the custom legend
-                    var legendContainer = document.getElementById('vehicleLegend');
-                    vehicleData.labels.forEach(function (label, index) {
-                        var legendItem = document.createElement('div');
-                        legendItem.style.display = 'flex';
-                        legendItem.style.alignItems = 'center';
-                        legendItem.style.gap = '10px';
+                        // Dynamically create and populate the custom legend
+                        var legendContainer = document.getElementById('vehicleLegend');
+                        vehicleData.labels.forEach(function (label, index) {
+                            var legendItem = document.createElement('div');
+                            legendItem.style.display = 'flex';
+                            legendItem.style.alignItems = 'center';
+                            legendItem.style.gap = '10px';
 
-                        // Create the colored box for the legend with a white outline
-                        var colorBox = document.createElement('div');
-                        colorBox.style.width = '20px';
-                        colorBox.style.height = '20px';
-                        colorBox.style.backgroundColor = colorPalette[index];  // Use dynamic color
-                        colorBox.style.border = '2px solid white';  // White outline (2px thick)
-                        colorBox.style.borderRadius = '5px';  // Optional: make the box corners rounded
+                            // Create the colored box for the legend with a white outline
+                            var colorBox = document.createElement('div');
+                            colorBox.style.width = '20px';
+                            colorBox.style.height = '20px';
+                            colorBox.style.backgroundColor = colorPalette[index];  // Use dynamic color
+                            colorBox.style.border = '2px solid white';  // White outline (2px thick)
+                            colorBox.style.borderRadius = '5px';  // Optional: make the box corners rounded
 
-                        // Create the label text for the legend
-                        var legendText = document.createElement('span');
-                        legendText.style.fontSize = '15px';
-                        legendText.style.fontWeight = 'bold';
-                        legendText.style.color = '#B39DDB';  // Light purple color for the legend text
-                        legendText.textContent = label + ': ' + vehicleData.data[index] + ' Vehicles';
+                            // Create the label text for the legend
+                            var legendText = document.createElement('span');
+                            legendText.style.fontSize = '15px';
+                            legendText.style.fontWeight = 'bold';
+                            legendText.style.color = '#B39DDB';  // Light purple color for the legend text
+                            legendText.textContent = label + ': ' + vehicleData.data[index] + ' Vehicles';
 
-                        // Append color box and text to the legend item
-                        legendItem.appendChild(colorBox);
-                        legendItem.appendChild(legendText);
+                            // Append color box and text to the legend item
+                            legendItem.appendChild(colorBox);
+                            legendItem.appendChild(legendText);
 
-                        // Add the legend item to the container
-                        legendContainer.appendChild(legendItem);
-                    });
+                            // Add the legend item to the container
+                            legendContainer.appendChild(legendItem);
+                        });
                </script>
-
-
             </main>
             <!-- End #main -->
-           
+
 
             <!-- ======= Footer ======= -->
             <footer id="footer" class="footer" style="border-top-color: chartreuse">
